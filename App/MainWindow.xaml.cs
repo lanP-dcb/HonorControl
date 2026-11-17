@@ -55,16 +55,17 @@ public sealed partial class MainWindow : Window
             AppWindow.Resize(new SizeInt32(width, height));
             AppWindow.Move(new PointInt32(work.X + (work.Width - width) / 2, work.Y + (work.Height - height) / 2));
             _ready = true;
+            await LoadPlatformAsync();
             LoadScheduler();
             LoadHotkeys();
             StartFirmwareKeys();
             ResidentStatusText.Text = AppPaths.Installed ? L.T("已安装 · 登录自动启动 · 后台保活已启用") : L.T("便携运行 · 关闭窗口后保留托盘");
-            _watcherDesired = AppPaths.Installed && (!File.Exists(Path.Combine(AppPaths.UserState, "color-watch-enabled.txt")) || File.ReadAllText(Path.Combine(AppPaths.UserState, "color-watch-enabled.txt")).Trim() != "0");
+            _watcherDesired = _capColor && AppPaths.Installed && (!File.Exists(Path.Combine(AppPaths.UserState, "color-watch-enabled.txt")) || File.ReadAllText(Path.Combine(AppPaths.UserState, "color-watch-enabled.txt")).Trim() != "0");
             _rhythmDesired = File.Exists(RhythmPreference) && File.ReadAllText(RhythmPreference).Trim() == "1";
             if (AppPaths.BackgroundLaunch) AppWindow.Hide();
             await RunAsync(async () =>
             {
-                await RefreshColorAsync(); ReadColorPreferences();
+                if (_capColor) { await RefreshColorAsync(); ReadColorPreferences(); }
                 await ReadRefreshRateAsync();
                 if (AppPaths.Installed || AppPaths.ExistingPipeName is not null)
                 {
@@ -77,7 +78,7 @@ public sealed partial class MainWindow : Window
                     await ReadKeyboardModeAsync(restorePreference: true);
                 }
             }, null);
-            Log(L.T("应用已启动。色彩控制可直接使用。"));
+            Log(_capColor ? L.T("应用已启动。色彩控制可直接使用。") : L.T("当前机型为只读档案：只显示传感器与固件状态，写入需逐项验证。"));
             _timer.Start();
             if (AppPaths.Installed) { _residentTimer.Start(); await MaintainResidentAsync(); }
             if (!AppPaths.BackgroundLaunch) await ShowStartupGuideAsync();
@@ -179,6 +180,8 @@ public sealed partial class MainWindow : Window
         if (text.Contains("AC power", StringComparison.OrdinalIgnoreCase)) return L.T("请连接电源，并确保电量至少为 20%。");
         if (text.Contains("single internal", StringComparison.OrdinalIgnoreCase)) return L.T("当前色彩功能只支持本机单内置屏布局，请先断开其他显示器。");
         if (text.Contains("BIOS 1.13", StringComparison.OrdinalIgnoreCase)) return L.T("当前固件版本不在已验证范围；已停止写入。");
+        if (text.Contains("not enabled for this platform", StringComparison.OrdinalIgnoreCase)) return L.T("该功能在当前机型尚未启用，目前只提供只读信息。");
+        if (text.Contains("verified on the DRA-XX platform only", StringComparison.OrdinalIgnoreCase)) return L.T("色彩写入仅在已验证的 DRA-XX 机型可用。");
         if (text.Contains("Choose sRGB", StringComparison.OrdinalIgnoreCase)) return L.T("请先选择一次原生、sRGB 或 P3，再开启自动色彩恢复。");
         if (text.Contains("Install the bundled ICC", StringComparison.OrdinalIgnoreCase)) return L.T("系统中的 ICC 文件缺失。请到设置页点击“安装 / 检查 ICC”。");
         return L.T(text);
@@ -193,7 +196,8 @@ public sealed partial class MainWindow : Window
     {
         _mode = mode;
         CurrentModeText.Text = ModeName(mode);
-        ModeFootnote.Text = mode is 0 or 1 or 3 ? L.T("已从设备固件读取确认") : L.T("连接后读取实际模式");
+        ModeFootnote.Text = !_capModeWrite ? L.T("该机型的性能档位写入尚未验证，当前只读取固件状态。")
+            : mode is 0 or 1 or 3 ? L.T("已从设备固件读取确认") : L.T("连接后读取实际模式");
     }
     private void UpdateFirmware(JsonElement value)
     {
@@ -235,7 +239,7 @@ public sealed partial class MainWindow : Window
             fanButtons[i].IsChecked = selected;
             fanButtons[i].Content = selected ? L.F($"✓ {i + 1} 档") : L.F($"{i + 1} 档");
         }
-        FanAvailability.Text = _mode != 3 ? L.T("风扇预设仅在 HUNTER 模式下可调。") : _availableFanLevels switch
+        FanAvailability.Text = !_capFan ? L.T("该机型不提供风扇预设写入，仅显示实时风扇转速。") : _mode != 3 ? L.T("风扇预设仅在 HUNTER 模式下可调。") : _availableFanLevels switch
         {
             5 => L.T("当前电源支持 1–5 档。实际转速随温度和负载变化。"),
             3 => L.T("当前电源支持 1–3 档。第 4、5 档需要支持的 200 W 电源。"),

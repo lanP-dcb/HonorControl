@@ -581,5 +581,15 @@
   "无法读取服务清单，请按下方名称在 Windows 服务和已安装的应用中核对。": "Cannot read the service list. Check the names below in Windows Services and Installed apps.",
   "日志与恢复记录保存在本机 LocalAppData\\HonorControl。": "Logs and recovery records are stored locally in LocalAppData\\HonorControl.",
   "运行日志每份最多 2 MiB，每类最多 3 份，超过 14 天未更新的日志自动清理。偏好、恢复记录与校准备份保留。": "Runtime logs rotate at 2 MiB with three files per stream. Logs not updated for 14 days are removed. Preferences, recovery records and calibration backups are retained.",
-  "安装时自动检查并导入受支持内屏的本机原厂 ICC 和 LUT。安装完成页会显示校准结果。": "Setup checks for and imports local factory ICC and LUT data for the supported internal panel. The installer reports the result on completion."
+  "安装时自动检查并导入受支持内屏的本机原厂 ICC 和 LUT。安装完成页会显示校准结果。": "Setup checks for and imports local factory ICC and LUT data for the supported internal panel. The installer reports the result on completion.",
+  "读取平台档案失败：": "Could not read the platform profile: ",
+  "该机型不提供风扇预设写入，仅显示实时风扇转速。": "This model has no fan preset writes; live RPM is shown only.",
+  "该机型的性能档位写入尚未验证，当前只读取固件状态。": "Performance mode writes are not verified on this model yet; firmware state is read only.",
+  "该机型的充电阈值写入尚未启用。": "Charge threshold writes are not enabled on this model yet.",
+  "当前机型为只读档案：只显示传感器与固件状态，写入需逐项验证。": "This model runs as a read-only profile: sensors and firmware state are shown; writes must be verified one by one.",
+  "该功能在当前机型尚未启用，目前只提供只读信息。": "This feature is not enabled on this model yet; only read-only data is available.",
+  "色彩写入仅在已验证的 DRA-XX 机型可用。": "Colour writes are available on the verified DRA-XX model only.",
+  "无法启动设备控制程序。": "Cannot start the device control program.",
+  "当前机型为 ": "Current device: ",
+  "：读取已验证，写入尚未启用；色彩与音频未适配该机型。": ": reads are verified, writes are not enabled yet; colour and audio are not adapted for this model."
 }

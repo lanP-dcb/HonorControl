@@ -10,15 +10,15 @@
     <NavigationView x:Name="Navigation" Grid.Row="1" PaneDisplayMode="Left" OpenPaneLength="202" IsBackButtonVisible="Collapsed" IsPaneToggleButtonVisible="False" IsSettingsVisible="False" SelectionChanged="Navigation_SelectionChanged" IsPaneOpen="True">
       <NavigationView.MenuItems>
         <NavigationViewItem x:Uid="Text001" Content="性能与散热" Tag="performance" IsSelected="True"><NavigationViewItem.Icon><FontIcon Glyph="&#xE945;"/></NavigationViewItem.Icon></NavigationViewItem>
-        <NavigationViewItem x:Uid="Text002" Content="显示与色彩" Tag="display"><NavigationViewItem.Icon><FontIcon Glyph="&#xE7F4;"/></NavigationViewItem.Icon></NavigationViewItem>
-        <NavigationViewItem x:Uid="Text003" Content="音频" Tag="audio"><NavigationViewItem.Icon><SymbolIcon Symbol="Volume"/></NavigationViewItem.Icon></NavigationViewItem>
+        <NavigationViewItem x:Uid="Text002" x:Name="NavDisplay" Content="显示与色彩" Tag="display"><NavigationViewItem.Icon><FontIcon Glyph="&#xE7F4;"/></NavigationViewItem.Icon></NavigationViewItem>
+        <NavigationViewItem x:Uid="Text003" x:Name="NavAudio" Content="音频" Tag="audio"><NavigationViewItem.Icon><SymbolIcon Symbol="Volume"/></NavigationViewItem.Icon></NavigationViewItem>
         <NavigationViewItem x:Uid="Text004" Content="网络加速" Tag="network"><NavigationViewItem.Icon><FontIcon Glyph="&#xE968;"/></NavigationViewItem.Icon></NavigationViewItem>
         <NavigationViewItemSeparator/>
         <NavigationViewItem x:Uid="Text005" Content="设置与记录" Tag="settings"><NavigationViewItem.Icon><FontIcon Glyph="&#xE713;"/></NavigationViewItem.Icon></NavigationViewItem>
         <NavigationViewItem x:Uid="Text006" Content="关于" Tag="about"><NavigationViewItem.Icon><SymbolIcon Symbol="Help"/></NavigationViewItem.Icon></NavigationViewItem>
       </NavigationView.MenuItems>
       <NavigationView.PaneFooter>
-        <StackPanel Margin="20,0,16,22" Spacing="7"><TextBlock Text="MAGICBOOK PRO 16" FontSize="10" CharacterSpacing="110" Foreground="{ThemeResource MutedBrush}"/><TextBlock Text="DRA-XX · BIOS 1.13" FontSize="12"/></StackPanel>
+        <StackPanel Margin="20,0,16,22" Spacing="7"><TextBlock x:Name="FooterModel" Text="MAGICBOOK PRO 16" FontSize="10" CharacterSpacing="110" Foreground="{ThemeResource MutedBrush}"/><TextBlock x:Name="FooterBios" Text="DRA-XX · BIOS 1.13" FontSize="12"/></StackPanel>
       </NavigationView.PaneFooter>
       <Grid Margin="30,18,30,22">
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
@@ -51,7 +51,7 @@
                   <StackPanel Spacing="8"><TextBlock x:Uid="Text028" Text="风扇 1" Style="{StaticResource CaptionLabel}"/><StackPanel Orientation="Horizontal" Spacing="7"><TextBlock x:Name="Fan0Rpm" Text="—" FontSize="30" FontWeight="SemiBold"/><TextBlock Text="RPM" Foreground="{ThemeResource MutedBrush}" VerticalAlignment="Bottom" Margin="0,0,0,5"/></StackPanel><TextBlock x:Uid="Text029" x:Name="Fan0Target" Text="目标 — RPM" Style="{StaticResource CaptionLabel}"/></StackPanel>
                   <StackPanel Grid.Column="1" Spacing="8"><TextBlock x:Uid="Text030" Text="风扇 2" Style="{StaticResource CaptionLabel}"/><StackPanel Orientation="Horizontal" Spacing="7"><TextBlock x:Name="Fan1Rpm" Text="—" FontSize="30" FontWeight="SemiBold"/><TextBlock Text="RPM" Foreground="{ThemeResource MutedBrush}" VerticalAlignment="Bottom" Margin="0,0,0,5"/></StackPanel><TextBlock x:Uid="Text031" x:Name="Fan1Target" Text="目标 — RPM" Style="{StaticResource CaptionLabel}"/></StackPanel>
                 </Grid>
-                <Grid ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <Grid x:Name="FanPresetRow" ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                   <ToggleButton x:Uid="Text032" x:Name="Fan1Button" Content="1 档" Tag="fan-1" Click="Fan_Click" HorizontalAlignment="Stretch" MinHeight="44" FontSize="12" ToolTipService.ToolTip="提交 HUNTER 第 1 档。" IsEnabled="False" Style="{StaticResource SelectionToggleStyle}"/><ToggleButton x:Uid="Text033" x:Name="Fan2Button" Grid.Column="1" Content="2 档" Tag="fan-2" Click="Fan_Click" HorizontalAlignment="Stretch" MinHeight="44" FontSize="12" ToolTipService.ToolTip="提交 HUNTER 第 2 档。" IsEnabled="False" Style="{StaticResource SelectionToggleStyle}"/><ToggleButton x:Uid="Text034" x:Name="Fan3Button" Grid.Column="2" Content="3 档" Tag="fan-3" Click="Fan_Click" HorizontalAlignment="Stretch" MinHeight="44" FontSize="12" ToolTipService.ToolTip="提交 HUNTER 第 3 档。" IsEnabled="False" Style="{StaticResource SelectionToggleStyle}"/><ToggleButton x:Uid="Text035" x:Name="Fan4Button" Grid.Column="3" Content="4 档" Tag="fan-4" Click="Fan_Click" HorizontalAlignment="Stretch" MinHeight="44" FontSize="12" ToolTipService.ToolTip="提交 HUNTER 第 4 档。" IsEnabled="False" Style="{StaticResource SelectionToggleStyle}"/><ToggleButton x:Uid="Text036" x:Name="Fan5Button" Grid.Column="4" Content="5 档" Tag="fan-5" Click="Fan_Click" HorizontalAlignment="Stretch" MinHeight="44" FontSize="12" ToolTipService.ToolTip="提交 HUNTER 第 5 档。" IsEnabled="False" Style="{StaticResource SelectionToggleStyle}"/>
                 </Grid>
                 <TextBlock x:Uid="Text037" x:Name="FanPresetHint" Text="连接后读取当前预设。" Style="{StaticResource CaptionLabel}"/>
@@ -91,7 +91,7 @@
                   <ToggleButton x:Uid="Text057" x:Name="ChargeTravel" Tag="charge-travel" Content="差旅 · 95–100%" Style="{StaticResource SelectionToggleStyle}" Click="Charge_Click"/>
                 </StackPanel>
               </StackPanel></Border>
-              <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="10">
+              <Border x:Name="GpuCard" Style="{StaticResource CardStyle}"><StackPanel Spacing="10">
                 <TextBlock x:Uid="Text058" Text="显卡电源与输出" Style="{StaticResource SectionLabel}"/>
                 <TextBlock x:Uid="Text059" x:Name="GpuStateText" Text="正在读取独显状态…" FontSize="18"/>
                 <TextBlock x:Name="GpuDisplayRoute" Style="{StaticResource CaptionLabel}"/>
@@ -236,9 +236,9 @@
                   <TextBlock x:Name="HotkeyStatusText" Style="{StaticResource CaptionLabel}"/>
                 </StackPanel>
               </Border>
-              <Border Style="{StaticResource CardStyle}"><Grid ColumnSpacing="18"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><StackPanel Spacing="6"><TextBlock x:Uid="Text187" Text="色彩配置文件" Style="{StaticResource SectionLabel}"/><TextBlock x:Uid="Text188" Text="安装原生、sRGB 和 P3 的 ICC 文件，供 Windows 色彩管理使用。" Style="{StaticResource CaptionLabel}"/></StackPanel><Button x:Uid="Text189" Grid.Column="1" Content="安装 / 检查 ICC" Click="InstallProfiles_Click" VerticalAlignment="Center"/></Grid></Border>
+              <Border x:Name="ColorProfileCard" Style="{StaticResource CardStyle}"><Grid ColumnSpacing="18"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><StackPanel Spacing="6"><TextBlock x:Uid="Text187" Text="色彩配置文件" Style="{StaticResource SectionLabel}"/><TextBlock x:Uid="Text188" Text="安装原生、sRGB 和 P3 的 ICC 文件，供 Windows 色彩管理使用。" Style="{StaticResource CaptionLabel}"/></StackPanel><Button x:Uid="Text189" Grid.Column="1" Content="安装 / 检查 ICC" Click="InstallProfiles_Click" VerticalAlignment="Center"/></Grid></Border>
               <Border Style="{StaticResource CardStyle}"><Grid><StackPanel Spacing="6"><TextBlock x:Uid="Text190" Text="应用主题" Style="{StaticResource SectionLabel}"/></StackPanel><ComboBox x:Name="ThemePicker" HorizontalAlignment="Right" Width="150" SelectedIndex="2" SelectionChanged="Theme_SelectionChanged"><ComboBoxItem x:Uid="Text191" Content="跟随系统"/><ComboBoxItem x:Uid="Text192" Content="浅色"/><ComboBoxItem x:Uid="Text193" Content="深色"/></ComboBox></Grid></Border>
-              <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="13"><TextBlock x:Uid="Text194" Text="设备与支持范围" Style="{StaticResource SectionLabel}"/><TextBlock Text="HONOR MagicBook Pro 16 · DRA-XX · BIOS 1.13" FontSize="16"/><TextBlock Text="Core Ultra 5 125H / GeForce RTX 4060" Style="{StaticResource CaptionLabel}"/><TextBlock x:Uid="Text195" Text="固件写入限定当前机型与 BIOS。色彩调整适用于当前内屏的 SDR 输出。" Style="{StaticResource CaptionLabel}"/></StackPanel></Border>
+              <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="13"><TextBlock x:Uid="Text194" Text="设备与支持范围" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="AboutDevice" Text="HONOR MagicBook Pro 16 · DRA-XX · BIOS 1.13" FontSize="16"/><TextBlock x:Name="AboutDeviceDetail" Text="Core Ultra 5 125H / GeForce RTX 4060" Style="{StaticResource CaptionLabel}"/><TextBlock x:Uid="Text195" Text="固件写入限定当前机型与 BIOS。色彩调整适用于当前内屏的 SDR 输出。" Style="{StaticResource CaptionLabel}"/></StackPanel></Border>
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="14"><Grid><TextBlock x:Uid="Text196" Text="最近操作" Style="{StaticResource SectionLabel}"/><Button x:Uid="Text197" Content="打开记录文件夹" HorizontalAlignment="Right" Click="OpenLogs_Click"/></Grid><ListView x:Name="ActivityList" SelectionMode="None" MaxHeight="230"/><TextBlock x:Name="FooterVersion" Text="Honor Control" Foreground="{ThemeResource MutedBrush}" FontSize="12"/></StackPanel></Border>
             </StackPanel>
             <StackPanel x:Name="AboutPage" Spacing="22" Visibility="Collapsed">
@@ -261,7 +261,7 @@
               </StackPanel></Border>
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="10">
                 <TextBlock x:Uid="Text211" Text="支持范围" Style="{StaticResource SectionLabel}"/>
-                <TextBlock x:Uid="Text212" Text="已验证 DRA-XX / BIOS 1.13。色彩依赖本机校准数据，空间音频和拾音依赖已安装的音频驱动。" Style="{StaticResource CaptionLabel}"/>
+                <TextBlock x:Uid="Text212" x:Name="AboutScopeText" Text="已验证 DRA-XX / BIOS 1.13。色彩依赖本机校准数据，空间音频和拾音依赖已安装的音频驱动。" Style="{StaticResource CaptionLabel}"/>
                 <TextBlock x:Uid="Text213" Text="未覆盖核显锁频、后台 CPU 硬配额及游戏配置修改；电池策略、多网络叠加、HDR 和外接多屏尚未全面验证。" Style="{StaticResource CaptionLabel}"/>
                 <TextBlock x:Uid="Text214" x:Name="AboutDataText" Text="应用日志与恢复记录只保存在本机的 LocalAppData\\HonorControl 目录。" Style="{StaticResource CaptionLabel}"/>
               </StackPanel></Border>

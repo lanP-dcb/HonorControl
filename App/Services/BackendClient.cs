@@ -122,26 +122,34 @@ internal sealed class BackendClient : IAsyncDisposable
         var allowed = new[] { "status", "native", "srgb", "p3", "restore", "display-effect", "color-watch-start", "color-watch-stop", "color-watch-reapply", "color-reapply", "color-watch-settings", "color-startup-enable", "color-startup-disable" };
         if (!allowed.Contains(command)) throw new ArgumentException(L.T("不支持的色彩操作。"));
         await _colorLock.WaitAsync();
-        try
-        {
-            var start = new ProcessStartInfo(Path.Combine(AppPaths.Backend, "HonorStandalone.exe")) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = AppPaths.Backend, RedirectStandardOutput = true, RedirectStandardError = true, StandardOutputEncoding = Encoding.UTF8, StandardErrorEncoding = Encoding.UTF8 };
-            start.ArgumentList.Add(command);
-            foreach (string argument in arguments) start.ArgumentList.Add(argument);
-            using var process = Process.Start(start) ?? throw new InvalidOperationException(L.T("无法启动色彩控制程序。"));
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(25));
-            var stdout = process.StandardOutput.ReadToEndAsync(timeout.Token);
-            var stderr = process.StandardError.ReadToEndAsync(timeout.Token);
-            try { await process.WaitForExitAsync(timeout.Token); } catch { try { process.Kill(true); } catch { } throw; }
-            string text = (await stdout).Trim().TrimStart('\uFEFF');
-            string error = (await stderr).Trim();
-            if (process.ExitCode != 0)
-            {
-                try { var result = JsonDocument.Parse(error.Length > 0 ? error : text).RootElement; if (result.TryGetProperty("Error", out var message)) throw new InvalidOperationException(message.GetString()); } catch (JsonException) { }
-                throw new InvalidOperationException(error.Length > 0 ? error : text);
-            }
-            return JsonDocument.Parse(text).RootElement.Clone();
-        }
+        try { return await RunStandaloneAsync(command, arguments); }
         finally { _colorLock.Release(); }
+    }
+    // Platform detection needs no elevation, so the UI can size itself before any admin session exists.
+    public async Task<JsonElement> PlatformStatusAsync()
+    {
+        await _colorLock.WaitAsync();
+        try { return await RunStandaloneAsync("platform-status"); }
+        finally { _colorLock.Release(); }
+    }
+    private async Task<JsonElement> RunStandaloneAsync(string command, params string[] arguments)
+    {
+        var start = new ProcessStartInfo(Path.Combine(AppPaths.Backend, "HonorStandalone.exe")) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = AppPaths.Backend, RedirectStandardOutput = true, RedirectStandardError = true, StandardOutputEncoding = Encoding.UTF8, StandardErrorEncoding = Encoding.UTF8 };
+        start.ArgumentList.Add(command);
+        foreach (string argument in arguments) start.ArgumentList.Add(argument);
+        using var process = Process.Start(start) ?? throw new InvalidOperationException(L.T("无法启动设备控制程序。"));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(25));
+        var stdout = process.StandardOutput.ReadToEndAsync(timeout.Token);
+        var stderr = process.StandardError.ReadToEndAsync(timeout.Token);
+        try { await process.WaitForExitAsync(timeout.Token); } catch { try { process.Kill(true); } catch { } throw; }
+        string text = (await stdout).Trim().TrimStart('\uFEFF');
+        string error = (await stderr).Trim();
+        if (process.ExitCode != 0)
+        {
+            try { var result = JsonDocument.Parse(error.Length > 0 ? error : text).RootElement; if (result.TryGetProperty("Error", out var message)) throw new InvalidOperationException(message.GetString()); } catch (JsonException) { }
+            throw new InvalidOperationException(error.Length > 0 ? error : text);
+        }
+        return JsonDocument.Parse(text).RootElement.Clone();
     }
     private async Task DisconnectAsync()
     {
