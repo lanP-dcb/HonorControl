@@ -158,6 +158,7 @@ internal static class HonorStandalone {
         string command=args.Length==0?"status":args[0].ToLowerInvariant();
         try {
             if(command=="admin-menu")return AdminMenu();
+            if(!PlatformProfile.Current.ColorLut&&(command=="native"||command=="srgb"||command=="p3"||command=="restore"||command=="display-effect"||command=="color-reapply"))throw new NotSupportedException("Color LUT writes are verified on the DRA-XX platform only.");
             if(command=="color-watch")return ColorWatcher.Run();
             if(command=="color-watch-start"){Console.WriteLine(Json.Serialize(ColorWatcher.Start()));return 0;}
             if(command=="color-watch-stop"){Console.WriteLine(Json.Serialize(ColorWatcher.Signal(true)));return 0;}

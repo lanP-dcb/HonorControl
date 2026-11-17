@@ -7,7 +7,7 @@ $backendPath=Join-Path $outputPath 'Backend'
 $brokerStage=Join-Path $PSScriptRoot 'artifacts\broker'
 New-Item -ItemType Directory -Path $backendPath -Force|Out-Null
 $compiler=Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
-$sources=@('HonorStandalone.cs','HonorFirmware.cs','WindowsColor.cs','ColorWatcher.cs','DisplayEffects.cs','BrightnessRhythm.cs','DttPolicy.cs','NvidiaBoost.cs')|ForEach-Object{Join-Path $PSScriptRoot ('BackendSource\'+$_)}
+$sources=@('HonorStandalone.cs','HonorFirmware.cs','PlatformProfile.cs','WindowsColor.cs','ColorWatcher.cs','DisplayEffects.cs','BrightnessRhythm.cs','DttPolicy.cs','NvidiaBoost.cs')|ForEach-Object{Join-Path $PSScriptRoot ('BackendSource\'+$_)}
 $sources+=Join-Path $PSScriptRoot 'Shared\DiagnosticLog.cs'
 & $compiler /nologo /platform:x64 /optimize+ /r:System.Core.dll /r:System.Management.dll /r:System.Web.Extensions.dll ('/out:'+(Join-Path $backendPath 'HonorStandalone.exe')) @sources
 if($LASTEXITCODE -ne 0){throw 'Backend compilation failed.'}

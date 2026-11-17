@@ -7,8 +7,10 @@ using System.Text.Json;
 using HonorControl.Shared;
 using HonorControl.Network;
 
-bool resident = args.Length == 1 && args[0] == "--resident";
-if (!resident && (args.Length != 2 || args[0] != "--pipe" || !System.Text.RegularExpressions.Regex.IsMatch(args[1], @"^HonorControl\.[a-fA-F0-9]{32}$"))) return;
+var allowWrites = args.Contains("--allow-writes");
+var positional = args.Where(argument => argument != "--allow-writes").ToArray();
+bool resident = positional.Length == 1 && positional[0] == "--resident";
+if (!resident && (positional.Length != 2 || positional[0] != "--pipe" || !System.Text.RegularExpressions.Regex.IsMatch(positional[1], @"^HonorControl\.[a-fA-F0-9]{32}$"))) return;
 if (!new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator)) return;
 if (resident && !string.Equals(Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "HonorControl"), StringComparison.OrdinalIgnoreCase)) return;
 using var singleton = new Mutex(false, "Local\\HonorControl.Agent." + RuntimeIdentity.Sid);
@@ -16,7 +18,7 @@ if (resident) { try { if (!singleton.WaitOne(0)) return; } catch (AbandonedMutex
 HonorControl.Diagnostics.DiagnosticLog.Clean(RuntimeIdentity.UserState);
 var backend = Path.Combine(AppContext.BaseDirectory, "Backend");
 string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "unknown";
-var allowed = new HashSet<string>(StringComparer.Ordinal) { "firmware-status", "firmware-mode", "firmware-policy", "firmware-smart", "firmware-performance", "firmware-hunter", "fan-1", "fan-2", "fan-3", "fan-4", "fan-5", "charge-status", "charge-home", "charge-office", "charge-travel", "keyboard-status", "keyboard-icons", "keyboard-fkeys", "keyboard-restore-preference" };
+var allowed = new HashSet<string>(StringComparer.Ordinal) { "platform-status", "firmware-status", "firmware-mode", "firmware-policy", "firmware-smart", "firmware-performance", "firmware-hunter", "fan-1", "fan-2", "fan-3", "fan-4", "fan-5", "charge-status", "charge-home", "charge-office", "charge-travel", "keyboard-status", "keyboard-icons", "keyboard-fkeys", "keyboard-restore-preference" };
 allowed.UnionWith(["touchpad-status", "mic-light-muted", "mic-light-active"]);
 using var lifetime = new CancellationTokenSource();
 if (!resident) lifetime.CancelAfter(TimeSpan.FromHours(12));
@@ -39,7 +41,7 @@ try
 {
     do
     {
-        var pipe = NamedPipeServerStreamAcl.Create(resident ? RuntimeIdentity.PipeName : args[1], PipeDirection.InOut, 4, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 4096, 4096, security);
+        var pipe = NamedPipeServerStreamAcl.Create(resident ? RuntimeIdentity.PipeName : positional[1], PipeDirection.InOut, 4, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 4096, 4096, security);
         using var initial = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
         if (!resident) initial.CancelAfter(TimeSpan.FromSeconds(45));
         try { await pipe.WaitForConnectionAsync(initial.Token); }
@@ -49,6 +51,13 @@ try
 }
 catch (OperationCanceledException) { }
 catch (Exception ex) { Log(ex); if (resident) Environment.ExitCode = 1; }
+
+static bool IsWrite(ControlRequest request)
+{
+    if (request.Action is "audio-apply" or "network-configure" or "wifi-connect" or "gpu-configure" or "gpu-force-integrated" or "performance-configure" or "install-profiles") return true;
+    if (request.Action != "firmware" || request.Command is null) return false;
+    return request.Command is not ("firmware-status" or "firmware-mode" or "firmware-policy" or "charge-status" or "keyboard-status" or "touchpad-status" or "platform-status");
+}
 
 async Task HandleAsync(NamedPipeServerStream pipe)
 {
@@ -65,6 +74,7 @@ async Task HandleAsync(NamedPipeServerStream pipe)
             try
             {
                 var request = Wire.Decode<ControlRequest>(line);
+                if (!allowWrites && IsWrite(request)) throw new InvalidOperationException("写入操作未启用：Broker 未以 --allow-writes 启动。");
                 if (request.Action == "exit") { await writer.WriteLineAsync(Wire.Encode(new ControlResponse(true))); break; }
                 if (request.Action == "hello") response = new(true, JsonSerializer.SerializeToElement(new { Administrator = true, Resident = resident, Version = version }));
                 else if (request.Action == "install-profiles") response = new(true, await RunAsync(Path.Combine(backend, "HonorStandalone.exe"), ["install-profiles"]));

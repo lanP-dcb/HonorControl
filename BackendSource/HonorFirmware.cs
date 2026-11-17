@@ -14,7 +14,7 @@ internal static class HonorFirmware {
     static readonly byte[] FanSelectors={0xAA,0xAB,0xAC,0xAD,0xA0};
     static readonly string Root=AppDomain.CurrentDomain.BaseDirectory;
     static readonly JavaScriptSerializer Json=new JavaScriptSerializer();
-    public static bool Handles(string command){return command.StartsWith("firmware-")||command.StartsWith("fan-")||command.StartsWith("charge-")||command.StartsWith("gpu-")||command.StartsWith("dtt-")||command.StartsWith("keyboard-")||command=="touchpad-status"||command=="mic-light-muted"||command=="mic-light-active";}
+    public static bool Handles(string command){return command.StartsWith("firmware-")||command.StartsWith("fan-")||command.StartsWith("charge-")||command.StartsWith("gpu-")||command.StartsWith("dtt-")||command.StartsWith("keyboard-")||command=="platform-status"||command=="touchpad-status"||command=="mic-light-muted"||command=="mic-light-active";}
     internal sealed class Session : IDisposable {
         ManagementObject instance; Mutex mutex;bool locked;
         public Session() {
@@ -47,6 +47,7 @@ internal static class HonorFirmware {
         public object KeyboardSnapshot(){CheckPlatform();int value=Call(4,6,0)[1];if(value!=IconKeysFirst&&value!=StandardFKeysFirst)throw new InvalidOperationException("Unknown Fn keyboard state.");return new{FnStateCode=value,StandardFKeys=value==StandardFKeysFirst};}
         public object KeyboardMode(string command){
             CheckPlatform();
+            if(!PlatformProfile.Current.FnWrite)throw new NotSupportedException("Fn row writes are not enabled for this platform yet.");
             string preference=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"HonorControl","DeviceState","keyboard-mode.txt");
             int value=command=="keyboard-fkeys"?StandardFKeysFirst:command=="keyboard-icons"?IconKeysFirst:0;
             if(command=="keyboard-restore-preference"){
@@ -71,13 +72,15 @@ internal static class HonorFirmware {
         }
         public object GpuSnapshot(){
             CheckPlatform();
+            if(!PlatformProfile.Current.DiscreteGpu)return new {StateCode=0,HotPlugSupported=false,ActiveOutputAdapters=new string[0],DiscreteGpuPresent=false};
             int state=Call(6,42,0)[1];
             int support=Call(6,43,0)[1];
             string[] outputs=WindowsColor.OutputAdapters();
-            return new {StateCode=state,HotPlugSupported=support==3,ActiveOutputAdapters=outputs};
+            return new {StateCode=state,HotPlugSupported=support==3,ActiveOutputAdapters=outputs,DiscreteGpuPresent=true};
         }
         public object SetGpu(bool enabled,bool force=false){
             CheckPlatform();
+            if(!PlatformProfile.Current.DiscreteGpu)throw new NotSupportedException("No switchable discrete GPU is present on this platform.");
             if(!enabled)NvidiaBoost.Restore();
             if(Call(6,43,0)[1]!=3)throw new InvalidOperationException("GPU hot-plug is unsupported on this configuration.");
             int state=Call(6,42,0)[1];
@@ -104,10 +107,14 @@ internal static class HonorFirmware {
         }
         public object PolicySnapshot(){
             CheckPlatform();
+            if(!PlatformProfile.Current.Dtt){
+                var thresholds=Call(3,17,0);
+                return new {ModeCode=Mode(),DttOdv=new int[0],DttSupported=false,ChargeMode=0,ChargeActivityCode=0,ChargeStartPercent=thresholds.Length>2?(int)thresholds[1]:0,ChargeStopPercent=thresholds.Length>2?(int)thresholds[2]:0};
+            }
             var odv=new int[9];
             for(byte index=0;index<odv.Length;index++)odv[index]=Call(3,14,index)[1];
             var charge=Call(3,22,0);
-            return new {ModeCode=Mode(),DttOdv=odv,ChargeMode=charge[1],ChargeActivityCode=charge[2],ChargeStartPercent=charge[3],ChargeStopPercent=charge[4]};
+            return new {ModeCode=Mode(),DttOdv=odv,DttSupported=true,ChargeMode=charge[1],ChargeActivityCode=charge[2],ChargeStartPercent=charge[3],ChargeStopPercent=charge[4]};
         }
         public object ChargeSnapshot(){
             CheckPlatform();
@@ -117,6 +124,7 @@ internal static class HonorFirmware {
         }
         public object SetCharge(byte start,byte stop){
             CheckPlatform();
+            if(!PlatformProfile.Current.ChargeWrite)throw new NotSupportedException("Charge threshold writes are not enabled for this platform yet.");
             var before=Call(3,17,0);
             if(before.Length<3||before[1]>before[2]||before[2]>100)throw new InvalidOperationException("Unexpected original charging thresholds.");
             if(before[1]!=start||before[2]!=stop){
@@ -136,19 +144,20 @@ internal static class HonorFirmware {
         }
         public int Word(byte main,byte sub,byte index,int offset){var data=Call(main,sub,index);if(data.Length<offset+2)throw new InvalidDataException("Short firmware reply.");return data[offset]|(data[offset+1]<<8);}
         public object Snapshot(){
-            int mode=Mode();var f0=Call(2,8,0);var f1=Call(2,8,1);var temp=Call(2,2,0);
-            int jack=Word(6,60,0,1),v0=Word(2,9,0,2),v1=Word(2,9,1,2),a0=Word(2,9,16,2),a1=Word(2,9,17,2);
+            var profile=PlatformProfile.Current;
+            int mode=Mode();var f0=Call(2,8,0);byte[] f1=null;try{f1=Call(2,8,1);}catch{}var temp=Call(2,2,0);
+            int jack=0,v0=0,v1=0,a0=0,a1=0;
+            try{if(profile.BarrelJack)jack=Word(6,60,0,1);v0=Word(2,9,0,2);v1=Word(2,9,1,2);a0=Word(2,9,16,2);a1=Word(2,9,17,2);}catch{}
             double watts=v0>0?v0*(double)a0/1000000.0:v1*(double)a1/1000000.0;
             PowerStatus power;
             bool fanPower=GetSystemPowerStatus(out power)&&power.Ac==1&&power.Percent!=255&&power.Percent>=20;
-            int fanLevels=!fanPower?0:jack==1||watts>=199?5:watts>=135?3:0;
-            int selector=FanSelector();
-            int fanPreset=mode==3?Array.IndexOf(FanSelectors,(byte)selector)+1:0;
-            return new {Backend="Windows ACPI WMI",ModeCode=mode,Mode=ModeName(mode),CpuCelsius=temp[1]==0?(int)temp[2]:-(int)temp[2],Fan0ActualRpm=f0[1]+256*f0[2],Fan0TargetRpm=f0[3]+256*f0[4],Fan1ActualRpm=f1[1]+256*f1[2],Fan1TargetRpm=f1[3]+256*f1[4],BarrelJackPresent=jack==1,PdAdapterWatts=watts,FanPresetLevelsAvailable=fanLevels,FanPreset=fanPreset,FanSelector=selector,HonorPerformanceHosts=Process.GetProcessesByName("HnPerformanceCenter").Length+Process.GetProcessesByName("HnPerfPowerNexus").Length};
+            int fanLevels=!profile.FanPreset||!fanPower?0:jack==1||watts>=199?5:watts>=135?3:0;
+            int selector=profile.FanPreset?FanSelector():0;
+            int fanPreset=mode==3&&profile.FanPreset?Array.IndexOf(FanSelectors,(byte)selector)+1:0;
+            return new {Backend="Windows ACPI WMI",Profile=profile.Name,ModeCode=mode,Mode=ModeName(mode),CpuCelsius=temp[1]==0?(int)temp[2]:-(int)temp[2],Fan0ActualRpm=f0[1]+256*f0[2],Fan0TargetRpm=f0[3]+256*f0[4],Fan1ActualRpm=f1==null?0:f1[1]+256*f1[2],Fan1TargetRpm=f1==null?0:f1[3]+256*f1[4],BarrelJackPresent=jack==1,PdAdapterWatts=watts,FanPresetLevelsAvailable=fanLevels,FanPreset=fanPreset,FanSelector=selector,FanSupported=profile.FanPreset,HonorPerformanceHosts=Process.GetProcessesByName("HnPerformanceCenter").Length+Process.GetProcessesByName("HnPerfPowerNexus").Length};
         }
         public void CheckPlatform(){
-            using(var q=new ManagementObjectSearcher("SELECT Model FROM Win32_ComputerSystem"))using(var all=q.Get())if(!all.Cast<ManagementObject>().Any(x=>Convert.ToString(x["Model"])=="DRA-XX"))throw new InvalidOperationException("Writes are limited to the verified DRA-XX platform.");
-            using(var q=new ManagementObjectSearcher("SELECT SMBIOSBIOSVersion FROM Win32_BIOS"))using(var all=q.Get())if(!all.Cast<ManagementObject>().Any(x=>Convert.ToString(x["SMBIOSBIOSVersion"])=="1.13"))throw new InvalidOperationException("This build's firmware writes were verified on BIOS 1.13 only.");
+            PlatformProfile.Current.AssertWrites();
         }
         public bool Barrel(){return Word(6,60,0,1)==1;}
         public double PdWatts(){int v0=Word(2,9,0,2);return v0>0?v0*(double)Word(2,9,16,2)/1000000.0:Word(2,9,1,2)*(double)Word(2,9,17,2)/1000000.0;}
@@ -158,6 +167,8 @@ internal static class HonorFirmware {
         }
         public void SetMode(int target){
             if(target!=0&&target!=1&&target!=3)throw new ArgumentException("Unknown performance mode.");
+            if(!PlatformProfile.Current.ModeWrite)throw new NotSupportedException("Performance mode writes are not enabled for this platform yet.");
+            if(target==3&&!PlatformProfile.Current.Hunter)throw new NotSupportedException("HUNTER mode is not available on this platform.");
             CheckPlatform();if(target!=0)CheckPower(target==3);
             int before=Mode();
             if(target!=before)DttPolicy.Restore(this);
@@ -182,6 +193,7 @@ internal static class HonorFirmware {
     }
     static string ModeName(int mode){return mode==0?"Smart":mode==1?"Performance":mode==3?"HUNTER":"Unknown";}
     public static object Execute(string command){
+        if(command=="platform-status")return PlatformProfile.Current.Snapshot();
         using(var session=new Session()){
             if(command.StartsWith("dtt-"))return DttPolicy.Execute(session,command);
             if(command.StartsWith("gpu-clock-"))return NvidiaBoost.Execute(session,command);
@@ -194,6 +206,7 @@ internal static class HonorFirmware {
             }
             if(command=="mic-light-muted"||command=="mic-light-active"){
                 session.CheckPlatform();
+                if(!PlatformProfile.Current.MicLight)throw new NotSupportedException("The microphone light is not enabled for this platform yet.");
                 bool muted=command=="mic-light-muted";
                 session.Call(4,11,muted?(byte)1:(byte)0);
                 return new{Accepted=true};
@@ -212,7 +225,7 @@ internal static class HonorFirmware {
             if(command=="gpu-force-integrated")return session.SetGpu(false,true);
             if(command.StartsWith("fan-")){
                 int level;if(!Int32.TryParse(command.Substring(4),out level)||level<1||level>5)throw new ArgumentException("Fan level must be 1..5.");
-                session.CheckPlatform();session.CheckPower(true);if(session.Mode()!=3)throw new InvalidOperationException("Select HUNTER mode before a manual fan preset.");
+                session.CheckPlatform();if(!PlatformProfile.Current.FanPreset)throw new NotSupportedException("Fan presets are not available on this platform.");session.CheckPower(true);if(session.Mode()!=3)throw new InvalidOperationException("Select HUNTER mode before a manual fan preset.");
                 if(level>3&&!session.Barrel()&&session.PdWatts()<199)throw new InvalidOperationException("Fan presets 4 and 5 require the supported 200W supply.");
                 var reply=session.Call(7,8,FanSelectors[level-1]);
                 if(reply[1]!=FanSelectors[level-1]||session.FanSelector()!=FanSelectors[level-1])throw new InvalidOperationException("Fan-selector readback did not match.");
@@ -229,7 +242,7 @@ internal static class HonorFirmware {
     }
     public static int Menu(){
         while(true){
-            Console.WriteLine("\nIndependent HONOR firmware control - DRA-XX / BIOS 1.13");
+            Console.WriteLine("\nIndependent HONOR firmware control - "+PlatformProfile.Current.Name+" / BIOS "+(PlatformProfile.Current.Bios.Length==0?"unknown":PlatformProfile.Current.Bios));
             Console.WriteLine("1 Smart    2 Performance    3 HUNTER    4 Read sensors");
             Console.WriteLine("5 Fan preset 1..5    Q Exit");
             string choice=(Console.ReadLine()??"q").Trim().ToLowerInvariant();if(choice=="q")return 0;

@@ -35,6 +35,7 @@ internal static class DttPolicy
         session.CheckPlatform();
         if(command=="dtt-status")return Read(session);
         if(command=="dtt-restore"){Restore(session);return Read(session);}
+        if(!PlatformProfile.Current.Dtt)throw new NotSupportedException("Scene DTT tuning is not available on this platform.");
         // The PL1/EPO/fan table was verified on the 125H configuration only.
         // Mode, fan-preset, Fn and charging controls use their separate platform guards.
         using(var processors=new ManagementObjectSearcher("SELECT Name FROM Win32_Processor"))
