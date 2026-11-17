@@ -32,6 +32,9 @@ internal sealed class TrayIcon : IDisposable
     [DllImport("user32.dll")] private static extern bool SetForegroundWindow(nint hwnd);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern uint RegisterWindowMessageW(string message);
     private readonly uint _taskbarCreated = RegisterWindowMessageW("TaskbarCreated");
+    internal bool CanMode { get; set; } = true;
+    internal bool CanHunter { get; set; } = true;
+    internal bool CanColor { get; set; } = true;
     public TrayIcon(nint hwnd, Action<string> action)
     {
         _hwnd = hwnd; _action = action; _callback = WindowProc;
@@ -59,9 +62,16 @@ internal sealed class TrayIcon : IDisposable
         try
         {
             AppendMenuW(menu, 0, 1, L.T("打开 Honor Control")); AppendMenuW(menu, 0x800, 0, null);
-            AppendMenuW(menu, 0, 10, L.T("智能模式")); AppendMenuW(menu, 0, 11, L.T("高能模式")); AppendMenuW(menu, 0, 13, L.T("HUNTER 模式"));
+            if (CanMode)
+            {
+                AppendMenuW(menu, 0, 10, L.T("智能模式")); AppendMenuW(menu, 0, 11, L.T("高能模式"));
+                if (CanHunter) AppendMenuW(menu, 0, 13, L.T("HUNTER 模式"));
+            }
             AppendMenuW(menu, 0, 14, L.T("循环内屏刷新率"));
-            AppendMenuW(menu, 0x800, 0, null); AppendMenuW(menu, 0, 20, L.T("原生色彩")); AppendMenuW(menu, 0, 21, L.T("sRGB 色彩")); AppendMenuW(menu, 0, 22, L.T("P3 色彩"));
+            if (CanColor)
+            {
+                AppendMenuW(menu, 0x800, 0, null); AppendMenuW(menu, 0, 20, L.T("原生色彩")); AppendMenuW(menu, 0, 21, L.T("sRGB 色彩")); AppendMenuW(menu, 0, 22, L.T("P3 色彩"));
+            }
             AppendMenuW(menu, 0x800, 0, null); AppendMenuW(menu, 0, 99, L.T("退出（本次会话停止常驻）"));
             GetCursorPos(out var point); SetForegroundWindow(_hwnd);
             uint choice = TrackPopupMenu(menu, 0x100 | 0x2, point.X, point.Y, 0, _hwnd, 0);

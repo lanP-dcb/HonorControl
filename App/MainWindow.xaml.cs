@@ -65,7 +65,7 @@ public sealed partial class MainWindow : Window
             if (AppPaths.BackgroundLaunch) AppWindow.Hide();
             await RunAsync(async () =>
             {
-                if (_capColor) { await RefreshColorAsync(); ReadColorPreferences(); }
+                if (_capColor || _capDisplayGamma) { await RefreshColorAsync(); ReadColorPreferences(); }
                 await ReadRefreshRateAsync();
                 if (AppPaths.Installed || AppPaths.ExistingPipeName is not null)
                 {
@@ -136,7 +136,7 @@ public sealed partial class MainWindow : Window
             }
             finally { _refreshing = false; }
         };
-        Closed += async (_, _) => { _closing = true; _timer.Stop(); _residentTimer.Stop(); _hotkeys?.Dispose(); _firmwareKeys?.Dispose(); try { _scenePower?.Restore(); } catch (Exception ex) { Log(Friendly(ex)); } try { _scheduler?.RestoreAll(); } catch (Exception ex) { Log(Friendly(ex)); } _tray?.Dispose(); _overlay.DismissAndClose(); await _backend.DisposeAsync(); };
+        Closed += async (_, _) => { _closing = true; _timer.Stop(); _residentTimer.Stop(); _hotkeys?.Dispose(); _firmwareKeys?.Dispose(); try { _scenePower?.Restore(); } catch (Exception ex) { Log(Friendly(ex)); } try { _scheduler?.RestoreAll(); } catch (Exception ex) { Log(Friendly(ex)); } if (_capDisplayGamma && !_capColor) { try { await _backend.DisplayGammaAsync("display-gamma-restore"); } catch (Exception ex) { Log(Friendly(ex)); } } _tray?.Dispose(); _overlay.DismissAndClose(); await _backend.DisposeAsync(); };
     }
 
     private async Task RunAsync(Func<Task> operation, string? success, bool switchFeedback = false)
@@ -251,6 +251,7 @@ public sealed partial class MainWindow : Window
     }
     private async Task RefreshColorAsync()
     {
+        if (_capDisplayGamma && !_capColor) { await RefreshDisplayGammaAsync(); return; }
         var status = await _backend.ColorAsync("status");
         _color = status.Text("ClosestFactoryMode");
         string profile = status.Text("WindowsIccProfile");
@@ -265,13 +266,27 @@ public sealed partial class MainWindow : Window
         DisplayEffectStatus.Text = !effectActive ? L.T("色彩效果已关闭") : IsTrue(status, "EffectsVerified") ? L.T("硬件 LUT 已读回") : L.T("设置尚未应用到硬件 LUT");
         UpdateSelections();
     }
+    private async Task RefreshDisplayGammaAsync()
+    {
+        var status = await _backend.DisplayGammaAsync("display-gamma-status");
+        string effect = status.Text("EffectStyle", "off");
+        DisplayModeSummary.Text = L.T("当前显示 · 系统伽马调节");
+        IccProfileText.Text = L.T("Windows 显示伽马表");
+        DisplayEffectPicker.SelectedIndex = effect == "eye" ? 1 : effect == "reading" ? 2 : 0;
+        TemperatureSlider.Value = status.Number("Temperature", 0);
+        bool active = status.ValueKind == JsonValueKind.Object && status.TryGetProperty("Active", out var activeValue) && activeValue.ValueKind == JsonValueKind.True;
+        DisplayEffectStatus.Text = !active ? L.T("显示效果已关闭") : IsTrue(status, "EffectsVerified") ? L.T("系统伽马表已读回") : L.T("设置尚未应用到系统伽马表");
+        ColorVerificationText.Text = L.T("使用 Windows 系统伽马表，可随时恢复原始设置。");
+        UpdateSelections();
+    }
     private async void ApplyDisplayEffect_Click(object sender, RoutedEventArgs e)
     {
         string effect = DisplayEffectPicker.SelectedIndex == 1 ? "eye" : DisplayEffectPicker.SelectedIndex == 2 ? "reading" : "off";
         string value = ((int)TemperatureSlider.Value).ToString(System.Globalization.CultureInfo.InvariantCulture);
         await RunAsync(async () =>
         {
-            await _backend.ColorAsync("display-effect", effect, value);
+            if (_capDisplayGamma && !_capColor) await _backend.DisplayGammaAsync("display-gamma-apply", effect, value);
+            else await _backend.ColorAsync("display-effect", effect, value);
             await RefreshColorAsync();
         }, L.T("显示效果已应用并读回。"));
     }
@@ -320,7 +335,11 @@ public sealed partial class MainWindow : Window
     private void UpdateCharge(JsonElement status)
     {
         int start = status.Number("ChargeStartPercent"), stop = status.Number("ChargeStopPercent");
-        ChargeStatus.Text = L.F($"固件读数 · {start}% 开始充电 / {stop}% 停止充电");
+        int battery = status.Number("BatteryPercent", -1);
+        string power = IsTrue(status, "AcOnline") ? L.T("已接通电源") : L.T("电池供电");
+        ChargeStatus.Text = battery >= 0
+            ? L.F($"电池 {battery}% · {power} · {start}% 开始充电 / {stop}% 停止充电")
+            : L.F($"固件读数 · {start}% 开始充电 / {stop}% 停止充电");
         ChargeHome.IsChecked = (start, stop) == (40, 70);
         ChargeOffice.IsChecked = (start, stop) == (70, 90);
         ChargeTravel.IsChecked = (start, stop) == (95, 100);
@@ -341,7 +360,12 @@ public sealed partial class MainWindow : Window
         string label = command == "native" ? L.T("原生") : command == "srgb" ? "sRGB" : "P3";
         await RunAsync(async () => { await _backend.ColorAsync(command); await RefreshColorAsync(); _overlay.Present(label, L.T("色彩模式"), OverlayIcon.Color); }, L.T("切换成功"));
     }
-    private async void RestoreColor_Click(object sender, RoutedEventArgs e) => await RunAsync(async () => { await _backend.ColorAsync("restore"); await RefreshColorAsync(); }, L.T("已恢复首次备份的硬件色彩与 ICC。"));
+    private async void RestoreColor_Click(object sender, RoutedEventArgs e) => await RunAsync(async () =>
+    {
+        if (_capDisplayGamma && !_capColor) await _backend.DisplayGammaAsync("display-gamma-restore");
+        else await _backend.ColorAsync("restore");
+        await RefreshColorAsync();
+    }, L.T("已恢复首次备份的硬件色彩与 ICC。"));
     private async void RefreshColor_Click(object sender, RoutedEventArgs e) => await RunAsync(async () => { await RefreshColorAsync(); ReadColorPreferences(); }, L.T("已重新读取硬件色彩与 ICC 状态。"));
     private async void InstallProfiles_Click(object sender, RoutedEventArgs e) => await RunAsync(async () => { await _backend.InstallProfilesAsync(); await RefreshColorAsync(); }, L.T("三种色彩的 ICC 配置已安装。"));
     private async void ColorWatch_Toggled(object sender, RoutedEventArgs e)

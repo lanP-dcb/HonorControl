@@ -1,5 +1,10 @@
 # Changelog / 更新记录
 
+## 0.15.0
+
+- 适配荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）：充电保护、智能/高能性能模式与系统伽马显示；网络、音频、Fn、显卡、DTT、HUNTER 与风扇预设按能力隐藏。
+- Adapts the HONOR MagicBook X14 2024 (FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M): charging protection, Smart/Performance modes and system gamma display; network, audio, Fn, GPU, DTT, HUNTER and fan presets are capability-hidden.
+
 ## 0.14.5
 
 - 安装器自动检查 DRA-XX / TMA2024 的本机原厂 ICC 与 sRGB、P3 校准 XML，导入结果显示在安装完成页。

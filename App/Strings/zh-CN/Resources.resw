@@ -277,7 +277,7 @@
     <value>护眼与色温</value>
   </data>
   <data name="Text078.Text" xml:space="preserve">
-    <value>在当前色域 LUT 上叠加显示效果，保持 ICC 关联。电子书按本地时间使用四套色彩矩阵。</value>
+    <value>在 Windows 系统伽马表上叠加护眼或电子书效果；电子书按本地时间使用四套色彩矩阵。</value>
   </data>
   <data name="Text079.Header" xml:space="preserve">
     <value>显示效果</value>

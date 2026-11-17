@@ -120,11 +120,17 @@ internal static class HonorFirmware {
             CheckPlatform();
             var data=Call(3,17,0);
             if(data.Length<3)throw new InvalidDataException("Short charge threshold reply.");
-            return new {ChargeStartPercent=data[1],ChargeStopPercent=data[2]};
+            PowerStatus power;bool hasPower=GetSystemPowerStatus(out power);
+            bool ac=hasPower&&power.Ac==1;
+            int percent=hasPower&&power.Percent!=255?power.Percent:-1;
+            bool charging=hasPower&&(power.Flags&8)!=0;
+            string state=percent<0?"电量未知":charging?"正在充电":ac?"已接电源":"电池供电";
+            return new {ChargeStartPercent=data[1],ChargeStopPercent=data[2],AcOnline=ac,BatteryPercent=percent,Charging=charging,ChargeSupported=PlatformProfile.Current.ChargeWrite,StatusText=state};
         }
         public object SetCharge(byte start,byte stop){
             CheckPlatform();
             if(!PlatformProfile.Current.ChargeWrite)throw new NotSupportedException("Charge threshold writes are not enabled for this platform yet.");
+            if(start>=stop||stop>100)throw new ArgumentException("充电阈值必须满足 开始 < 停止，且停止不超过 100%。");
             var before=Call(3,17,0);
             if(before.Length<3||before[1]>before[2]||before[2]>100)throw new InvalidOperationException("Unexpected original charging thresholds.");
             if(before[1]!=start||before[2]!=stop){
@@ -154,7 +160,7 @@ internal static class HonorFirmware {
             int fanLevels=!profile.FanPreset||!fanPower?0:jack==1||watts>=199?5:watts>=135?3:0;
             int selector=profile.FanPreset?FanSelector():0;
             int fanPreset=mode==3&&profile.FanPreset?Array.IndexOf(FanSelectors,(byte)selector)+1:0;
-            return new {Backend="Windows ACPI WMI",Profile=profile.Name,ModeCode=mode,Mode=ModeName(mode),CpuCelsius=temp[1]==0?(int)temp[2]:-(int)temp[2],Fan0ActualRpm=f0[1]+256*f0[2],Fan0TargetRpm=f0[3]+256*f0[4],Fan1ActualRpm=f1==null?0:f1[1]+256*f1[2],Fan1TargetRpm=f1==null?0:f1[3]+256*f1[4],BarrelJackPresent=jack==1,PdAdapterWatts=watts,FanPresetLevelsAvailable=fanLevels,FanPreset=fanPreset,FanSelector=selector,FanSupported=profile.FanPreset,HonorPerformanceHosts=Process.GetProcessesByName("HnPerformanceCenter").Length+Process.GetProcessesByName("HnPerfPowerNexus").Length};
+            return new {Backend="Windows ACPI WMI",Profile=profile.Name,ModeCode=mode,Mode=ModeName(mode),ModeName=ModeName(mode),ModeWrite=profile.ModeWrite,TurboXAvailable=profile.ModeWrite&&PerformanceOwnerCount()==0,CpuCelsius=temp[1]==0?(int)temp[2]:-(int)temp[2],Fan0ActualRpm=f0[1]+256*f0[2],Fan0TargetRpm=f0[3]+256*f0[4],Fan1ActualRpm=f1==null?0:f1[1]+256*f1[2],Fan1TargetRpm=f1==null?0:f1[3]+256*f1[4],BarrelJackPresent=jack==1,PdAdapterWatts=watts,FanPresetLevelsAvailable=fanLevels,FanPreset=fanPreset,FanSelector=selector,FanSupported=profile.FanPreset,HonorPerformanceHosts=PerformanceOwnerCount()};
         }
         public void CheckPlatform(){
             PlatformProfile.Current.AssertWrites();
@@ -169,6 +175,8 @@ internal static class HonorFirmware {
             if(target!=0&&target!=1&&target!=3)throw new ArgumentException("Unknown performance mode.");
             if(!PlatformProfile.Current.ModeWrite)throw new NotSupportedException("Performance mode writes are not enabled for this platform yet.");
             if(target==3&&!PlatformProfile.Current.Hunter)throw new NotSupportedException("HUNTER mode is not available on this platform.");
+            if(target==3&&PlatformProfile.Current.Name=="FRI-HXX")throw new NotSupportedException("FRI-HXX 仅支持智能和高能模式，不包含 HUNTER。");
+            if(PerformanceOwnerRunning())throw new InvalidOperationException("荣耀电脑管家正在管理性能模式，请先退出电脑管家后重试。");
             CheckPlatform();if(target!=0)CheckPower(target==3);
             int before=Mode();
             if(target!=before)DttPolicy.Restore(this);
@@ -192,6 +200,8 @@ internal static class HonorFirmware {
         public void Dispose(){if(instance!=null){instance.Dispose();instance=null;}if(mutex!=null){if(locked)mutex.ReleaseMutex();mutex.Dispose();mutex=null;locked=false;}}
     }
     static string ModeName(int mode){return mode==0?"Smart":mode==1?"Performance":mode==3?"HUNTER":"Unknown";}
+    static int PerformanceOwnerCount(){return Process.GetProcessesByName("HnPerformanceCenter").Length+Process.GetProcessesByName("HnPerfPowerNexus").Length;}
+    static bool PerformanceOwnerRunning(){return PerformanceOwnerCount()>0;}
     public static object Execute(string command){
         if(command=="platform-status")return PlatformProfile.Current.Snapshot();
         using(var session=new Session()){

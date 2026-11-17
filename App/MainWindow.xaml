@@ -12,7 +12,7 @@
         <NavigationViewItem x:Uid="Text001" Content="性能与散热" Tag="performance" IsSelected="True"><NavigationViewItem.Icon><FontIcon Glyph="&#xE945;"/></NavigationViewItem.Icon></NavigationViewItem>
         <NavigationViewItem x:Uid="Text002" x:Name="NavDisplay" Content="显示与色彩" Tag="display"><NavigationViewItem.Icon><FontIcon Glyph="&#xE7F4;"/></NavigationViewItem.Icon></NavigationViewItem>
         <NavigationViewItem x:Uid="Text003" x:Name="NavAudio" Content="音频" Tag="audio"><NavigationViewItem.Icon><SymbolIcon Symbol="Volume"/></NavigationViewItem.Icon></NavigationViewItem>
-        <NavigationViewItem x:Uid="Text004" Content="网络加速" Tag="network"><NavigationViewItem.Icon><FontIcon Glyph="&#xE968;"/></NavigationViewItem.Icon></NavigationViewItem>
+        <NavigationViewItem x:Uid="Text004" x:Name="NavNetwork" Content="网络加速" Tag="network"><NavigationViewItem.Icon><FontIcon Glyph="&#xE968;"/></NavigationViewItem.Icon></NavigationViewItem>
         <NavigationViewItemSeparator/>
         <NavigationViewItem x:Uid="Text005" Content="设置与记录" Tag="settings"><NavigationViewItem.Icon><FontIcon Glyph="&#xE713;"/></NavigationViewItem.Icon></NavigationViewItem>
         <NavigationViewItem x:Uid="Text006" Content="关于" Tag="about"><NavigationViewItem.Icon><SymbolIcon Symbol="Help"/></NavigationViewItem.Icon></NavigationViewItem>
@@ -56,7 +56,7 @@
                 </Grid>
                 <TextBlock x:Uid="Text037" x:Name="FanPresetHint" Text="连接后读取当前预设。" Style="{StaticResource CaptionLabel}"/>
               </StackPanel></Border>
-              <Border Style="{StaticResource CardStyle}">
+              <Border x:Name="AutomationCard" Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="12">
                   <ToggleSwitch x:Uid="Text038" x:Name="AutoPerformanceToggle" Header="自动性能模式" OnContent="开启" OffContent="关闭" Toggled="AutoPerformance_Toggled"/>
                   <TextBlock x:Uid="Text039" Text="识别游戏运行状态，游戏未退出时保持可用的最高模式。启动或退出过程保留 45 秒缓冲。其余场景按前台应用选择模式，手动切换后关闭自动切换。" Style="{StaticResource CaptionLabel}"/>
@@ -110,7 +110,7 @@
                 <StackPanel Spacing="12"><Border Background="{ThemeResource AccentSoftBrush}" CornerRadius="6" Padding="10,6" HorizontalAlignment="Left"><TextBlock x:Uid="Text069" x:Name="DisplayModeSummary" Text="正在读取当前色彩…" Foreground="{ThemeResource AccentTextBrush}" FontSize="13"/></Border></StackPanel>
                 
               </Grid></Border>
-              <Grid ColumnSpacing="14"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+              <Grid x:Name="ColorModeGrid" ColumnSpacing="14"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                 <ToggleButton x:Name="SrgbButton" Tag="srgb" Click="Color_Click" Style="{StaticResource ModeStyle}"><StackPanel Spacing="13"><Grid><TextBlock Text="sRGB" FontSize="26" FontWeight="SemiBold"/><TextBlock x:Uid="Text070" x:Name="SrgbSelected" Text="✓ 已选择" Visibility="Collapsed" Foreground="{ThemeResource AccentTextBrush}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid><TextBlock x:Uid="Text071" Text="加载出厂 sRGB LUT，关联 sRGB ICC。" Style="{StaticResource CaptionLabel}"/></StackPanel></ToggleButton>
                 <ToggleButton x:Name="P3Button" Grid.Column="1" Tag="p3" Click="Color_Click" Style="{StaticResource ModeStyle}"><StackPanel Spacing="13"><Grid><TextBlock Text="P3" FontSize="26" FontWeight="SemiBold"/><TextBlock x:Uid="Text072" x:Name="P3Selected" Text="✓ 已选择" Visibility="Collapsed" Foreground="{ThemeResource AccentTextBrush}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid><TextBlock x:Uid="Text073" Text="加载出厂 P3 LUT，关联 P3 ICC。" Style="{StaticResource CaptionLabel}"/></StackPanel></ToggleButton>
                 <ToggleButton x:Name="NativeButton" Grid.Column="2" Tag="native" Click="Color_Click" Style="{StaticResource ModeStyle}"><StackPanel Spacing="13"><Grid><TextBlock x:Uid="Text074" Text="原生" FontSize="26" FontWeight="SemiBold"/><TextBlock x:Uid="Text075" x:Name="NativeSelected" Text="✓ 已选择" Visibility="Collapsed" Foreground="{ThemeResource AccentTextBrush}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid><TextBlock x:Uid="Text076" Text="使用原生色域，关联原生 ICC。" Style="{StaticResource CaptionLabel}"/></StackPanel></ToggleButton>
@@ -118,7 +118,7 @@
               <Border Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="12">
                   <TextBlock x:Uid="Text077" Text="护眼与色温" Style="{StaticResource SectionLabel}"/>
-                  <TextBlock x:Uid="Text078" Text="在当前色域 LUT 上叠加显示效果，保持 ICC 关联。电子书按本地时间使用四套色彩矩阵。" Style="{StaticResource CaptionLabel}"/>
+                  <TextBlock x:Uid="Text078" Text="在系统伽马表上叠加护眼或电子书效果；电子书按本地时间使用四套色彩矩阵。" Style="{StaticResource CaptionLabel}"/>
                   <ComboBox x:Uid="Text079" x:Name="DisplayEffectPicker" Header="显示效果" SelectedIndex="0" Width="220">
                     <ComboBoxItem x:Uid="Text080" Content="关闭"/><ComboBoxItem x:Uid="Text081" Content="护眼"/><ComboBoxItem x:Uid="Text082" Content="电子书"/>
                   </ComboBox>
@@ -134,11 +134,11 @@
                   <ToggleSwitch x:Uid="Text087" x:Name="BrightnessRhythmToggle" Grid.Column="1" OnContent="开启" OffContent="关闭" Toggled="BrightnessRhythm_Toggled"/>
                 </Grid>
               </Border>
-              <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="22">
+              <Border x:Name="ColorWatchCard" Style="{StaticResource CardStyle}"><StackPanel Spacing="22">
                 <Grid><StackPanel Spacing="5"><TextBlock x:Uid="Text088" Text="唤醒后恢复所选色彩" FontSize="16"/><TextBlock x:Uid="Text089" Text="唤醒或显示器配置变化时恢复。" Style="{StaticResource CaptionLabel}"/></StackPanel><ToggleSwitch x:Uid="Text090" x:Name="ColorWatchToggle" HorizontalAlignment="Right" OffContent="关闭" OnContent="开启" Toggled="ColorWatch_Toggled"/></Grid>
                 
               </StackPanel></Border>
-              <Border Style="{StaticResource CardStyle}"><Grid><StackPanel Spacing="7"><TextBlock x:Uid="Text091" Text="当前色彩配置" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="IccProfileText" Text="—" Style="{StaticResource CaptionLabel}"/><TextBlock x:Uid="Text092" x:Name="ColorVerificationText" Text="硬件 LUT 与 ICC 状态将分别读取。" Style="{StaticResource CaptionLabel}"/></StackPanel><StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center"><Button x:Uid="Text093" Content="刷新状态" Click="RefreshColor_Click"/><Button x:Uid="Text094" Content="恢复首次备份" Click="RestoreColor_Click"/></StackPanel></Grid></Border>
+              <Border x:Name="ColorStatusCard" Style="{StaticResource CardStyle}"><Grid><StackPanel Spacing="7"><TextBlock x:Uid="Text091" Text="当前色彩配置" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="IccProfileText" Text="—" Style="{StaticResource CaptionLabel}"/><TextBlock x:Uid="Text092" x:Name="ColorVerificationText" Text="硬件 LUT 与 ICC 状态将分别读取。" Style="{StaticResource CaptionLabel}"/></StackPanel><StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center"><Button x:Uid="Text093" Content="刷新状态" Click="RefreshColor_Click"/><Button x:Uid="Text094" Content="恢复首次备份" Click="RestoreColor_Click"/></StackPanel></Grid></Border>
               <Border Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="12">
                   <Grid ColumnSpacing="16"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
@@ -209,7 +209,7 @@
             </StackPanel>
             <StackPanel x:Name="SettingsPage" Visibility="Collapsed" Spacing="22">
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="8"><TextBlock x:Uid="Text164" Text="后台常驻" Style="{StaticResource SectionLabel}"/><TextBlock x:Uid="Text165" x:Name="ResidentStatusText" Text="便携运行" Style="{StaticResource CaptionLabel}"/><TextBlock x:Uid="Text166" Text="关闭窗口后驻留托盘。" Style="{StaticResource CaptionLabel}"/><Button x:Uid="Text167" Content="预览切换提示" Click="PreviewOverlay_Click"/></StackPanel></Border>
-              <Border Style="{StaticResource CardStyle}">
+              <Border x:Name="FnCard" Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="14">
                   <TextBlock x:Uid="Text168" Text="Fn 与 F1–F12" Style="{StaticResource SectionLabel}"/>
                   <TextBlock x:Uid="Text169" Text="Fn+P：固件切换智能／高能，显示实际模式。Fn+R：切换内屏刷新率并显示悬浮提示。" Style="{StaticResource CaptionLabel}"/>

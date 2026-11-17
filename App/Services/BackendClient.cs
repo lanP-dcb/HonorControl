@@ -125,6 +125,14 @@ internal sealed class BackendClient : IAsyncDisposable
         try { return await RunStandaloneAsync(command, arguments); }
         finally { _colorLock.Release(); }
     }
+    public async Task<JsonElement> DisplayGammaAsync(string command, params string[] arguments)
+    {
+        var allowed = new[] { "display-gamma-status", "display-gamma-apply", "display-gamma-restore" };
+        if (!allowed.Contains(command)) throw new ArgumentException(L.T("不支持的显示调节操作。"));
+        await _colorLock.WaitAsync();
+        try { return await RunStandaloneAsync(command, arguments); }
+        finally { _colorLock.Release(); }
+    }
     // Platform detection needs no elevation, so the UI can size itself before any admin session exists.
     public async Task<JsonElement> PlatformStatusAsync()
     {

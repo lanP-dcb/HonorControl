@@ -5,6 +5,7 @@
     <Compile Include="../../Broker/PerformanceController.cs" Link="PerformanceController.cs" />
     <Compile Include="../../Broker/GameSessionTracker.cs" Link="GameSessionTracker.cs" />
     <Compile Include="../../Shared/SceneCatalog.cs" Link="SceneCatalog.cs" />
+    <Compile Include="../../Shared/PlatformCapabilities.cs" Link="PlatformCapabilities.cs" />
     <EmbeddedResource Include="../../App/Assets/DarwinAScenes.tsv" LogicalName="DarwinAScenes.tsv" />
   </ItemGroup>
 </Project>

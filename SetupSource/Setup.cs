@@ -14,13 +14,13 @@ using System.Windows.Forms;
 
 [assembly: AssemblyTitle("Honor Control Setup")]
 [assembly: AssemblyProduct("Honor Control")]
-[assembly: AssemblyVersion("0.14.5.0")]
-[assembly: AssemblyFileVersion("0.14.5.0")]
+[assembly: AssemblyVersion("0.15.0.0")]
+[assembly: AssemblyFileVersion("0.15.0.0")]
 [assembly: AssemblyCopyright("Copyright 2026 wzk112")]
 
 internal static class SetupProgram
 {
-    internal const string Version = "0.14.5";
+    internal const string Version = "0.15.0";
 #if UNINSTALL
     internal static readonly bool Uninstall = true;
 #else
@@ -174,17 +174,10 @@ internal sealed class SetupForm : Form
         path.Text = SetupProgram.InstallPath;
         notes.Text = SetupProgram.Uninstall
             ? TextFor("将停止登录任务，退出托盘并恢复自动控制所修改的设置，然后移除应用。\r\n\r\n个人偏好、日志、色彩备份与校准数据保留在 LocalAppData\\HonorControl。不会卸载硬件驱动。", "Stops sign-in tasks, exits the tray, restores automatic-control changes and removes the application.\r\n\r\nPreferences, logs, color backups and calibration stay in LocalAppData\\HonorControl. Hardware drivers are retained.")
-            : TextFor("安装到 Program Files，创建开始菜单入口并注册登录启动。升级保留个人设置和本机校准文件。\r\n\r\n已验证 DRA-XX / BIOS 1.13 / 125H + RTX 4060。安装器会检查受支持内屏的本机原厂 ICC 和 LUT，核对后自动导入。\r\n\r\n首次打开有具体使用教程和官方组件迁移清单。保留 Intel、NVIDIA、Realtek、Fortemedia、Histen 等硬件驱动。\r\n\r\n仅供非商业个人使用与研究。禁止商用。", "Installs in Program Files with a Start menu entry and sign-in startup. Upgrades preserve preferences and local calibration.\r\n\r\nVerified on DRA-XX / BIOS 1.13 / 125H + RTX 4060. Setup checks for the local factory ICC and LUT data and imports it for the supported internal panel.\r\n\r\nThe first-launch tutorial includes usage steps and an OEM migration checklist. Keep Intel, NVIDIA, Realtek, Fortemedia and Histen hardware drivers.\r\n\r\nNoncommercial personal use and research only. Commercial use prohibited.");
+            : TextFor("安装到 Program Files，创建开始菜单入口并注册登录启动。升级保留个人设置和显示伽马备份。\r\n\r\n已验证 FRI-HXX / M1030 / BIOS 1.15 / 7640HS + Radeon 760M。充电保护与智能/高能模式需在退出荣耀电脑管家性能后台后写入；显示使用 Windows 伽马表，不导入 ICC/LUT。\r\n\r\n首次打开有具体使用教程和官方组件迁移清单。不要删除 ACPI、AMD 显卡、音频和 HID 驱动。\r\n\r\n仅供非商业个人使用与研究。禁止商用。", "Installs in Program Files with a Start menu entry and sign-in startup. Upgrades preserve preferences and display gamma backups.\r\n\r\nVerified on FRI-HXX / M1030 / BIOS 1.15 / 7640HS + Radeon 760M. Charge protection and Smart/High performance modes require HONOR PC Manager performance services to be stopped first. Display uses the Windows gamma ramp; no ICC/LUT is imported.\r\n\r\nThe first-launch tutorial includes usage steps and an OEM migration checklist. Keep ACPI, AMD graphics, audio and HID drivers.\r\n\r\nNoncommercial personal use and research only. Commercial use prohibited.");
         if (complete && !SetupProgram.Uninstall)
         {
-            if (calibrationResult == "Factory")
-                notes.Text = TextFor("已自动导入本机原厂 ICC 和 LUT。打开应用后，可在「显示与色彩」选择色彩模式。", "Local factory ICC and LUT data was imported. Open Display and color to choose a color mode.");
-            else if (calibrationResult == "Existing")
-                notes.Text = TextFor("已保留本机现有的 ICC 和 LUT。打开应用后，可在「显示与色彩」选择色彩模式。", "Your existing ICC and LUT data is available. Open Display and color to choose a color mode.");
-            else if (calibrationResult == "ProfileInstallFailed")
-                notes.Text = TextFor("应用已安装。Windows 未能注册 ICC 配置。请在「设置与记录」中使用「安装 / 检查 ICC」。", "The app is installed. Windows could not register the ICC profiles. Use Install / check ICC in Settings and logs.");
-            else
-                notes.Text = TextFor("应用已安装。未找到可自动导入的完整本机原厂色彩校准。要切换色彩，请按安装指南导入与内屏匹配的 ICC 和 LUT。", "The app is installed. Setup could not import a complete set of local factory calibration. To switch color modes, follow the installation guide to import ICC and LUT data for your panel.");
+            notes.Text = TextFor("应用已安装。打开 Honor Control，在「性能与散热」检查充电保护与性能模式。", "The app is installed. Open Honor Control and check charge protection and performance modes under Performance and cooling.");
         }
         if (!working) status.Text = complete ? TextFor("已完成。", "Completed.") : TextFor("准备就绪", "Ready");
         install.Text = complete ? TextFor("完成", "Finish") : SetupProgram.Uninstall ? TextFor("卸载", "Uninstall") : TextFor("安装", "Install");

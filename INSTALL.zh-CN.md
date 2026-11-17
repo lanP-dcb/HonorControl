@@ -1,18 +1,18 @@
 # 安装与迁移
 
-Honor Control 0.14.5 适配 Windows x64 的 HONOR MagicBook Pro 16 DRA-XX，固件写入已限定 BIOS 1.13。色彩校准文件对应本机内屏。完整安装目录约占用数百 MB，需保留整个解压目录。
+Honor Control 0.15.0 适配 Windows x64 的荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）。固件写入默认关闭，需要显式授权。完整安装目录约占用数百 MB，需保留整个解压目录。
 
 ## 安装与升级
 
-1. 从 Releases 下载 HonorControl-0.14.5-Setup-x64.exe，双击并授权一次 UAC。
+1. 从 Releases 下载 HonorControl-0.15.0-Setup-x64.exe，双击并授权一次 UAC。
 2. 点击安装，等待完成。安装到 C:\Program Files\HonorControl，注册当前用户的托盘和设备控制登录任务。
 3. 从开始菜单打开。首次前台打开显示教程及官方组件迁移清单，登录后台启动不会打断用户。
 4. 在关于页切换简体中文 / English，点击重新打开应用语言。升级重复运行新版安装器，保留偏好、日志和已有校准数据。
 5. 通过 Windows「已安装的应用」中的 Honor Control 卸载。卸载保留个人数据、备份和硬件驱动；校准缓存保存在 LocalAppData\HonorControl\Calibration，重装时自动使用。
 
-安装器会保留已有的 Honor Control 校准。首次安装时，如果检测到 DRA-XX 的 TMA2024 内屏，以及 Windows 色彩目录中完整的原厂 ICC 与匹配本机序列号的两份校准 XML，就会自动导入。打开应用后，可在「显示与色彩」选择原生、sRGB 或 P3。
+本机型的荣耀电脑管家安装包没有提供 FRI/H 系列的原厂 ICC、LUT 与色彩管理配置，安装器不会导入工厂色彩数据。显示与色彩功能改用 Windows 系统伽马表，可在应用内调节护眼、电子书与色温，并恢复原始设置。
 
-重装系统导致原厂文件缺失，或更换过内屏时，请使用对应物理面板的备份。完整备份包含 `HonorNative.icc`、`HonorsRGB.icc`、`HonorP3.icc`、`sRGB.lut` 和 `P3.lut`。在管理员 PowerShell 运行安装目录中的 `Import-Calibration.ps1 -SourceDirectory 'D:\本机校准备份'`，再到「设置与记录」点击「安装 / 检查 ICC」。缺少校准时仍可使用其他功能。
+保留原厂色彩校准的导入脚本供其他机型使用；本机型没有可导入的工厂校准数据，无需运行 `Import-Calibration.ps1`。
 
 开发者和手动包仍可使用 Install.ps1，普通用户直接运行 Setup。请使用日常登录的管理员账户，不要通过另一个账户的凭据安装。
 ## 原厂组件

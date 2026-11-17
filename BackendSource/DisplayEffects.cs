@@ -71,5 +71,23 @@ internal sealed class DisplayEffects
         return output;
     }
 
+    // Per-channel gains for a Windows gamma ramp. The reading matrices are applied
+    // by their row sums because a gamma ramp cannot express a full 3x3 mix.
+    public double[] GammaFactors(int localHour)
+    {
+        double[] matrix = Style == "reading" ? ReadingMatrices[localHour / 6] : null;
+        double warmth = Temperature / 100.0;
+        double redGain = warmth < 0 ? 1 + warmth * .13 : 1;
+        double greenGain = warmth < 0 ? 1 + warmth * .04 : 1 - warmth * .05;
+        double blueGain = (Style == "eye" ? .91 : 1) * (warmth > 0 ? 1 - warmth * .20 : 1);
+        if (matrix == null) return new[] { redGain, greenGain, blueGain };
+        return new[]
+        {
+            redGain * (matrix[0] + matrix[1] + matrix[2]),
+            greenGain * (matrix[3] + matrix[4] + matrix[5]),
+            blueGain * (matrix[6] + matrix[7] + matrix[8])
+        };
+    }
+
     private static double Clamp(double value) { return Math.Min(1, Math.Max(0, value)); }
 }
