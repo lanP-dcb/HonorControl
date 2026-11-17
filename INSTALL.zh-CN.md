@@ -1,6 +1,6 @@
 # 安装与迁移
 
-Honor Control 0.15.0 适配 Windows x64 的荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）。固件写入默认关闭，需要显式授权。完整安装目录约占用数百 MB，需保留整个解压目录。
+Honor Control 0.15.0 适配 Windows x64 的荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）。安装包的 Broker 已启用写入，但只执行本机型能力位允许的充电保护与智能/高能控制。完整安装目录约占用数百 MB，需保留整个解压目录。
 
 ## 安装与升级
 
@@ -15,44 +15,49 @@ Honor Control 0.15.0 适配 Windows x64 的荣耀笔记本 X14 锐龙版 2024（
 保留原厂色彩校准的导入脚本供其他机型使用；本机型没有可导入的工厂校准数据，无需运行 `Import-Calibration.ps1`。
 
 开发者和手动包仍可使用 Install.ps1，普通用户直接运行 Setup。请使用日常登录的管理员账户，不要通过另一个账户的凭据安装。
-## 原厂组件
+
+## 原厂组件与卸载
 
 原厂管家的性能、色彩和 OSD 后台可能与 Honor Control 同时修改设备设置。迁移时先安装并验证 Honor Control，再通过「设置 → 应用 → 已安装的应用」或「控制面板 → 程序和功能」卸载荣耀电脑管家。需要清除原厂提示时，检查发布者为荣耀的 OSD 组件。HUNTERCAMP、Magic 视界、YOYO 助理等按所需功能处理。 [微软卸载说明](https://support.microsoft.com/en-gb/windows/uninstall-or-remove-apps-and-programs-in-windows-4b55f974-2cc6-2d2b-d092-5905080eaf98) · [荣耀卸载说明](https://www.honor.com/cn/support/content/zh-cn15813919/)
 
-需要继续保留以下硬件组件。
+卸载荣耀电脑管家后，Honor Control 不依赖 `PCManager.exe`、`MBAMainService`、`HnPerformanceCenter`、`HnPerfPowerNexus`、`HnLcdEnhancement`、`SmartChargePlugin` 或 ICC/LUT 文件；充电保护和智能/高能走本机 ACPI/WMI 固件接口，显示 gamma 走 Windows 接口。
+
+需要保留以下底层组件。
 
 | 功能 | 依赖 |
 | --- | --- |
-| 固件模式、风扇、Fn 与充电保护 | 本机 ACPI/WMI、芯片组与固件 |
-| 场景功耗 | Intel Dynamic Tuning |
-| 色彩 | Intel 显卡驱动及对应内屏 LUT、ICC 校准文件 |
-| 独显频偏与电源 | NVIDIA 显卡驱动 |
-| 空间音频 | Honor Histen、Awinic 等音频 APO、校准文件与声卡驱动 |
-| 单人、多人、环境拾音 | Fortemedia APO 与 Fortemedia APO Control Service |
-| 声音与麦克风 | Realtek、Intel Smart Sound 及音频服务 |
+| 充电保护、智能/高能 | 本机 ACPI/WMI 设备 `ACPI\PNP0C14\HWMI`（Windows `wmiacpi`）与 BIOS/UEFI 固件 |
+| 内屏刷新率 | AMD Radeon 显卡驱动与 Windows 显示配置 |
+| 护眼、电子书、色温 | Windows 系统伽马表；不需要 `HnLcdEnhancement`、ICC 或硬件 LUT |
+| 音频、Fn、风扇预设、GPU 切换、DTT | 当前 FRI 版本不启用 |
 
-荣耀名称也出现在固件、摄像头、音频效果等设备驱动中。删除驱动会影响对应硬件功能。系统目录中的残留文件应由对应卸载程序处理。
+不要删除 `ACPI\PNP0C14\HWMI` 设备、AMD 显卡驱动、HID 与芯片组驱动；荣耀名称也可能出现在摄像头、音频等设备驱动中，删除会影响对应硬件。
 
-已卸载或停用后台后，可用随包脚本检查软件残留。默认只输出计划；管理员运行并明确传入 `-Apply` 才删除计划中的软件目录、服务、自启动、已知卸载项、应用包和应用注册表分支。
+建议卸载顺序：
+
+1. 安装并验证 Honor Control（充电阈值、智能/高能、gamma、刷新率）。
+2. 从托盘退出荣耀电脑管家性能后台；确认 `HnPerformanceCenter` 与 `HnPerfPowerNexus` 已结束。`MBAProcessWatcher` 可能重新拉起它们；必要时先停止 `MBAMainService`。
+3. 通过 Windows「已安装的应用」卸载荣耀电脑管家，重启。
+4. 在设备管理器确认 `ACPI\PNP0C14\HWMI` 仍为正常；运行 `platform-status`、`charge-status`，再测试一次充电写入、智能/高能切换和 gamma 恢复。
+5. 确认无误后，可用随包脚本清理软件残留；默认只输出计划，管理员运行并明确传入 `-Apply` 才执行。
 
 ```powershell
 .\Clean-HonorSoftware.ps1
 .\Clean-HonorSoftware.ps1 -Apply
 ```
 
-报告和注册表备份保存在 `%LOCALAPPDATA%\HonorControl\Migration`。脚本不删除 DriverStore、PnP 设备、`ProgramData\HonorEffect` 或音频驱动，不自动重启。失败与占用项会写入报告。
+如果卸载后 WMI 返回“拒绝访问”或设备缺失，先重新安装荣耀官网对应机型的 ACPI/BIOS 驱动包，而不要重装整套电脑管家。脚本不删除 DriverStore、PnP 设备、`ProgramData\HonorEffect` 或音频驱动，不自动重启；失败与占用项会写入 `%LOCALAPPDATA%\HonorControl\Migration`。
 
 ## 验证
 
-- 重新登录后确认托盘与硬件控制已连接。
-- 读取智能、高能、HUNTER 和风扇预设，HUNTER 的可选档位随供电条件变化。受限切换会显示原因浮窗。
-- 用 Fn+P、Fn+R 验证模式与刷新率提示。触摸板、麦克风提示使用各自图标。音量和亮度使用 Windows 提示。
-- 打开游戏后检查自动性能页的实际模式、目标模式和游戏进程。游戏进程存在时保持游戏模式，退出后保留 45 秒缓冲，再按场景稳定时间调整。
-- 在音频页验证外放、耳机和拾音模式。耳机听感需连接对应设备检查，实际音效依赖驱动及音源。
-- 色彩切换同时检查硬件 LUT 与 ICC。HDR、独显直连和外接多屏的校准适配范围见 README。
+- 重新登录后确认托盘与硬件控制已连接；关于页显示 `FRI-HXX / BIOS 1.15`。
+- 读取当前性能模式，只应出现智能和高能；高能需要插电且电量至少 20%。
+- 读取充电阈值，显示当前电池百分比与接电状态；用家用 40–70% 或办公 70–90% 写入并回读。
+- 显示与色彩页只应提供眼护、电子书、色温与刷新率；调整 gamma 后点恢复应回到原始状态。
+- 网络、音频、Fn、GPU、风扇预设、HUNTER 与 DTT 在本机型不显示，这是按能力位折叠，不是加载失败。
 
 ## 暂停与恢复
 
-右键托盘选择退出，可暂停当前登录会话的常驻控制。关闭自动性能、OS Turbo 或显卡自动控制时，应用按恢复记录还原自己修改的设置。「恢复首次备份」用于恢复首次保存的硬件色彩及 ICC。
+右键托盘选择退出，可暂停当前登录会话的常驻控制。关闭充电保护或性能模式自动控制时，应用按恢复记录还原自己修改的设置；退出应用会恢复原始 Windows 伽马表。
 
 需要恢复原厂功能时，从荣耀官网按对应机型下载安装包和驱动。重启后检查音频、显示与性能状态，再决定启用哪个控制软件。 [荣耀驱动下载说明](https://www.honor.com/cn/support/content/zh-cn15816112)

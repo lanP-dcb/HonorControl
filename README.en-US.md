@@ -25,11 +25,11 @@ The target is `C:\Program Files\HonorControl` with two sign-in tasks, `HonorCont
 
 The HONOR PC Manager package for this model does not provide factory ICC, LUT or colour-management data for the FRI/H family, so Setup does not import factory colour data; display effects use the Windows system gamma ramp. Public packages omit OEM DLLs, drivers and calibration data.
 
-Uninstall HONOR PC Manager, separate OSD, HUNTERCAMP, Magic Animation and YOYO software if replacing their controls. Keep Intel, NVIDIA, Realtek, Fortemedia, Histen, ACPI and other hardware drivers, audio services and calibration folders. The cleanup script previews its exact scope by default and only applies with `-Apply`. See the [migration guide](INSTALL.en-US.md).
+Uninstall HONOR PC Manager, separate OSD, HUNTERCAMP, Magic Animation and YOYO software if replacing their controls. Keep the AMD Radeon graphics driver, the `ACPI\PNP0C14\HWMI` ACPI/WMI device, HID and chipset drivers; do not delete DriverStore or PnP devices. The cleanup script previews its exact scope by default and only applies with `-Apply`. See the [migration guide](INSTALL.en-US.md).
 
 ## Compatibility and limitations
 
-The verified device is FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M. Firmware writes are guarded and only enabled after explicit authorization. Performance mode needs AC and at least 20% battery. HONOR PC Manager must not be actively managing performance mode at the same time.
+The verified device is FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M. The 0.15.0 installer enables Broker `--allow-writes`, but only capability-approved charge and performance writes pass; firmware retains final control. Performance mode needs AC and at least 20% battery. HONOR PC Manager must not be actively managing performance mode at the same time.
 
 Other CPU, BIOS or model combinations are read-only and report the detected configuration. Display and colour use the Windows system gamma ramp only: this model has no factory hardware LUT, ICC or colour-management data, so Native/sRGB/P3 hardware switching is not offered. Network acceleration, audio, Fn, GPU switching, DTT/OS Turbo, automatic performance, process scheduling, HUNTER and fan presets are not enabled for this model.
 

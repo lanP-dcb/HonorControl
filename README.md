@@ -27,12 +27,12 @@
 
 本机型的荣耀电脑管家安装包未提供 FRI/H 系列的原厂 ICC、LUT 和色彩管理配置，因此安装器不会导入工厂色彩数据；显示功能改用 Windows 系统伽马表。公共包不包含原厂 DLL、驱动或校准数据。详见[安装指南](INSTALL.zh-CN.md)。
 
-荣耀电脑管家、独立 OSD、HUNTERCAMP、Magic 视界及 YOYO 等软件后台可卸载。**保留 Intel / NVIDIA / Realtek / Fortemedia / Histen / ACPI 等硬件驱动、音频服务和校准目录。** 清理脚本默认只列计划，显式传入 `-Apply` 才执行，报告写入本机。
+荣耀电脑管家、独立 OSD、HUNTERCAMP、Magic 视界及 YOYO 等软件后台可卸载。**保留 AMD Radeon 显卡驱动、ACPI/WMI 设备 `ACPI\PNP0C14\HWMI`、HID 与芯片组驱动；不要删除 DriverStore 或 PnP 设备。** 清理脚本默认只列计划，显式传入 `-Apply` 才执行，报告写入本机。
 
 ## 支持与限制
 
 - 固件写入仅面向 FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M。其他 CPU、BIOS 或机型一律只读，并显示检测到的实际配置。
-- 充电保护写入和性能模式写入选定 WMI 命令；首次安装的 Broker 默认不启用写入，需要显式授权后才生效。固件保留最终控制权。
+- 充电保护写入和性能模式写入使用选定 WMI 命令；0.15.0 安装包的 Broker 已启用 `--allow-writes`，但只执行能力位允许的控制，固件保留最终控制权。
 - 高能模式需要插电且电量至少 20%。荣耀电脑管家正在管理性能模式时，Honor Control 会提示先退出电脑管家，避免两套后端争抢。
 - 显示与色彩仅使用 Windows 系统伽马表，提供护眼、电子书与色温；本机型没有原厂硬件 LUT、ICC 或色彩管理配置，因此不提供原生/sRGB/P3 硬件切换。
 - 网络加速、音频、Fn、显卡切换、DTT/OS Turbo、自动性能、进程调度、HUNTER 与风扇预设未在本机型启用，界面按能力隐藏。
