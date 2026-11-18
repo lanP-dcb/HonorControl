@@ -24,7 +24,8 @@ var allowed = new HashSet<string>(StringComparer.Ordinal)
     "platform-status", "firmware-status", "firmware-smart", "firmware-performance",
     "charge-status", "charge-home", "charge-office", "charge-travel", "charge-off",
     "keyboard-status", "keyboard-icons", "keyboard-fkeys",
-    "display-gamma-status", "display-gamma-apply", "display-gamma-restore"
+    "display-gamma-status", "display-gamma-apply", "display-gamma-restore",
+    "display-gamma-rhythm-start", "display-gamma-rhythm-stop", "display-gamma-rhythm-tick"
 };
 using var lifetime = new CancellationTokenSource();
 if (!resident) lifetime.CancelAfter(TimeSpan.FromHours(12));

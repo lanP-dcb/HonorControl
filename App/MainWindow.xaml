@@ -33,26 +33,18 @@
           <Grid Padding="0,0,4,4">
             <StackPanel x:Name="PerformancePage" Spacing="22">
               <Grid ColumnSpacing="14"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <Border Style="{StaticResource CardStyle}" Padding="20"><StackPanel Spacing="10"><TextBlock x:Uid="Text009" Text="当前性能模式" Style="{StaticResource CaptionLabel}"/><TextBlock x:Name="CurrentModeText" Text="等待连接" FontSize="28" FontWeight="SemiBold"/><TextBlock x:Name="ModeFootnote" Text="首次操作授权一次，之后直接切换" Style="{StaticResource CaptionLabel}"/></StackPanel></Border>
+                <Border Style="{StaticResource CardStyle}" Padding="20"><StackPanel Spacing="10"><TextBlock x:Uid="Text009" Text="当前性能模式 · OS Turbo" Style="{StaticResource CaptionLabel}"/><TextBlock x:Name="CurrentModeText" Text="等待连接" FontSize="28" FontWeight="SemiBold"/><TextBlock x:Name="ModeFootnote" Text="首次操作授权一次，之后直接切换" Style="{StaticResource CaptionLabel}"/></StackPanel></Border>
                 <Border Grid.Column="1" Style="{StaticResource CardStyle}" Padding="20"><StackPanel Spacing="10"><TextBlock x:Uid="Text012" Text="CPU 温度" Style="{StaticResource CaptionLabel}"/><TextBlock x:Name="CpuTemperature" Text="— °C" FontSize="28" FontWeight="SemiBold"/><TextBlock Text="固件实时读数" Style="{StaticResource CaptionLabel}"/></StackPanel></Border>
                 <Border Grid.Column="2" Style="{StaticResource CardStyle}" Padding="20"><StackPanel Spacing="10"><TextBlock x:Uid="Text014" Text="电源状态" Style="{StaticResource CaptionLabel}"/><TextBlock x:Name="PowerSourceText" Text="—" FontSize="25" FontWeight="SemiBold"/><TextBlock x:Name="PowerSourceHint" Text="连接后读取电源信息" Style="{StaticResource CaptionLabel}"/></StackPanel></Border>
               </Grid>
 
               <StackPanel Spacing="12"><TextBlock Text="性能模式" Style="{StaticResource SectionLabel}"/>
                 <Grid ColumnSpacing="14"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                  <ToggleButton x:Name="SmartModeButton" Tag="firmware-smart" Click="Mode_Click" Style="{StaticResource ModeStyle}"><StackPanel Spacing="13"><FontIcon Glyph="&#xE945;" HorizontalAlignment="Left" FontSize="25" Foreground="{ThemeResource AccentTextBrush}"/><Grid><TextBlock x:Uid="Text017" Text="智能" FontSize="21" FontWeight="SemiBold"/><TextBlock x:Name="SmartSelected" Text="✓ 已选择" Visibility="Collapsed" Foreground="{ThemeResource AccentTextBrush}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid><TextBlock Text="固件模式 0，可在电池供电时使用。" Style="{StaticResource CaptionLabel}"/></StackPanel></ToggleButton>
+                  <ToggleButton x:Name="SmartModeButton" Tag="firmware-smart" Click="Mode_Click" Style="{StaticResource ModeStyle}"><StackPanel Spacing="13"><FontIcon Glyph="&#xE945;" HorizontalAlignment="Left" FontSize="25" Foreground="{ThemeResource AccentTextBrush}"/><Grid><TextBlock x:Uid="Text017" Text="平衡" FontSize="21" FontWeight="SemiBold"/><TextBlock x:Name="SmartSelected" Text="✓ 已选择" Visibility="Collapsed" Foreground="{ThemeResource AccentTextBrush}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid><TextBlock Text="固件模式 0，可在电池供电时使用。" Style="{StaticResource CaptionLabel}"/></StackPanel></ToggleButton>
                   <ToggleButton x:Name="PerformanceModeButton" Grid.Column="1" Tag="firmware-performance" Click="Mode_Click" Style="{StaticResource ModeStyle}"><StackPanel Spacing="13"><FontIcon Glyph="&#xE9D9;" HorizontalAlignment="Left" FontSize="25" Foreground="{ThemeResource AccentTextBrush}"/><Grid><TextBlock x:Uid="Text020" Text="高能" FontSize="21" FontWeight="SemiBold"/><TextBlock x:Name="PerformanceSelected" Text="✓ 已选择" Visibility="Collapsed" Foreground="{ThemeResource AccentTextBrush}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid><TextBlock Text="固件模式 1，需接通电源且电量至少 20%。" Style="{StaticResource CaptionLabel}"/></StackPanel></ToggleButton>
                   <ToggleButton x:Name="HunterModeButton" Grid.Column="2" IsEnabled="False" ToolTipService.ToolTip="本机仅展示 HUNTER；该模式需要圆口电源、独立显卡与受支持的风扇预设，当前设备不具备这些条件。" Style="{StaticResource ModeStyle}"><StackPanel Spacing="13"><FontIcon Glyph="&#xE7FC;" HorizontalAlignment="Left" FontSize="25" Foreground="{ThemeResource MutedBrush}"/><Grid><TextBlock Text="HUNTER" FontSize="21" FontWeight="SemiBold" Foreground="{ThemeResource MutedBrush}"/><TextBlock x:Uid="Text023" x:Name="HunterSelected" Text="✓ 已选择" Visibility="Collapsed" Foreground="{ThemeResource AccentTextBrush}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid><TextBlock x:Uid="Text024" Text="仅作展示，本机不可选。" Style="{StaticResource CaptionLabel}"/></StackPanel></ToggleButton>
                 </Grid>
               </StackPanel>
-
-              <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="16">
-                <Grid><StackPanel Spacing="5"><TextBlock Text="风扇" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="FanAvailability" Text="只读传感器；本机不提供风扇预设写入。" Style="{StaticResource CaptionLabel}"/></StackPanel><Button Click="Refresh_Click" ToolTipService.ToolTip="刷新传感器"><FontIcon Glyph="&#xE72C;" FontSize="15"/></Button></Grid>
-                <Grid ColumnSpacing="28"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                  <StackPanel Spacing="8"><TextBlock x:Uid="Text028" Text="风扇 1" Style="{StaticResource CaptionLabel}"/><StackPanel Orientation="Horizontal" Spacing="7"><TextBlock x:Name="Fan0Rpm" Text="—" FontSize="30" FontWeight="SemiBold"/><TextBlock Text="RPM" Foreground="{ThemeResource MutedBrush}" VerticalAlignment="Bottom" Margin="0,0,0,5"/></StackPanel><TextBlock x:Name="Fan0Target" Text="目标 — RPM" Style="{StaticResource CaptionLabel}"/></StackPanel>
-                  <StackPanel Grid.Column="1" Spacing="8"><TextBlock x:Uid="Text030" Text="风扇 2" Style="{StaticResource CaptionLabel}"/><StackPanel Orientation="Horizontal" Spacing="7"><TextBlock x:Name="Fan1Rpm" Text="—" FontSize="30" FontWeight="SemiBold"/><TextBlock Text="RPM" Foreground="{ThemeResource MutedBrush}" VerticalAlignment="Bottom" Margin="0,0,0,5"/></StackPanel><TextBlock x:Name="Fan1Target" Text="目标 — RPM" Style="{StaticResource CaptionLabel}"/></StackPanel>
-                </Grid>
-              </StackPanel></Border>
 
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="12">
                 <Grid><StackPanel Spacing="5"><TextBlock x:Uid="Text052" Text="电池充电保护" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="ChargeStatus" Text="读取固件保存的充电阈值。" Style="{StaticResource CaptionLabel}"/></StackPanel><Button x:Uid="Text054" HorizontalAlignment="Right" Content="读取阈值" Click="ReadCharge_Click"/></Grid>
@@ -85,15 +77,15 @@
                 <Slider x:Name="TemperatureSlider" Header="色温 · 偏冷 / 默认 / 偏暖" Minimum="-100" Maximum="100" Value="0" StepFrequency="5" MaxWidth="430" HorizontalAlignment="Stretch"/>
                 <StackPanel Orientation="Horizontal" Spacing="12"><Button x:Uid="Text084" Content="应用显示效果" Click="ApplyDisplayEffect_Click"/><Button Content="恢复系统原色" Click="RestoreDisplay_Click"/><TextBlock x:Name="DisplayEffectStatus" VerticalAlignment="Center" Style="{StaticResource CaptionLabel}"/></StackPanel>
               </StackPanel></Border>
+              <Border Style="{StaticResource CardStyle}"><Grid ColumnSpacing="16"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><StackPanel Spacing="6"><TextBlock x:Uid="Text085" Text="亮度节律（系统伽马）" Style="{StaticResource SectionLabel}"/><TextBlock x:Uid="Text086" Text="在系统伽马表上叠加约 60 秒一次的缓慢亮度起伏，幅度约 4%，与护眼、电子书和色温叠加。关闭后立即恢复当前效果。" Style="{StaticResource CaptionLabel}"/><TextBlock x:Name="RhythmStatusText" Text="亮度节律未启用" Style="{StaticResource CaptionLabel}"/></StackPanel><ToggleSwitch x:Uid="Text087" x:Name="BrightnessRhythmToggle" Grid.Column="1" OnContent="开启" OffContent="关闭" Toggled="BrightnessRhythm_Toggled"/></Grid></Border>
               <Border Style="{StaticResource CardStyle}"><Grid><StackPanel Spacing="7"><TextBlock Text="当前显示状态" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="DisplayVerificationText" Text="等待读取系统伽马表。" Style="{StaticResource CaptionLabel}"/></StackPanel><StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center"><Button Content="刷新状态" Click="RefreshDisplay_Click"/></StackPanel></Grid></Border>
-              <Border Style="{StaticResource CardStyle}"><StackPanel Orientation="Horizontal" Spacing="8"><Button x:Uid="Text100" Content="夜间模式" Tag="ms-settings:nightlight" Click="OpenDisplaySettings_Click"/><Button x:Uid="Text101" Content="亮度与显示" Tag="ms-settings:display" Click="OpenDisplaySettings_Click"/><Button x:Uid="Text102" Content="高级显示设置" Tag="ms-settings:display-advanced" Click="OpenDisplaySettings_Click"/></StackPanel></Border>
             </StackPanel>
 
             <StackPanel x:Name="SettingsPage" Visibility="Collapsed" Spacing="22">
               <Border x:Name="FnCard" Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="14">
                   <TextBlock x:Uid="Text168" Text="Fn 与 F1–F12" Style="{StaticResource SectionLabel}"/>
-                  <TextBlock x:Uid="Text169" Text="Fn+P：固件切换智能／高能，显示实际模式。Fn 行默认行为会保存到本机，并在下次登录后恢复。" Style="{StaticResource CaptionLabel}"/>
+                  <TextBlock x:Uid="Text169" Text="Fn+P：固件切换平衡／高能，显示实际模式。Fn 行默认行为会保存到本机，并在下次登录后恢复。" Style="{StaticResource CaptionLabel}"/>
                   <ComboBox x:Name="FnRowModePicker" Header="F1–F12 默认行为" SelectionChanged="FnRowMode_Changed" HorizontalAlignment="Stretch"><ComboBoxItem Content="键帽图标功能优先"/><ComboBoxItem Content="标准 F1–F12 优先"/></ComboBox>
                   <TextBlock x:Name="KeyboardFnStateText" Text="正在读取固件键盘状态…" Style="{StaticResource CaptionLabel}"/>
                   <TextBlock Text="点按 Fn 可临时切换。登录后恢复在此保存的默认行为。亮度与音量由固件和 Windows 处理。" Style="{StaticResource CaptionLabel}"/>
@@ -101,17 +93,17 @@
                   <TextBlock x:Name="FnEventStatusText" Style="{StaticResource CaptionLabel}"/>
                 </StackPanel>
               </Border>
-              <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="8"><TextBlock x:Uid="Text164" Text="后台常驻" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="ResidentStatusText" Text="便携运行" Style="{StaticResource CaptionLabel}"/><TextBlock Text="关闭窗口后驻留托盘；托盘菜单可切换智能／高能或退出。" Style="{StaticResource CaptionLabel}"/></StackPanel></Border>
+              <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="8"><TextBlock x:Uid="Text164" Text="后台常驻" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="ResidentStatusText" Text="便携运行" Style="{StaticResource CaptionLabel}"/><TextBlock Text="关闭窗口后驻留托盘；托盘菜单可切换平衡／高能或退出。" Style="{StaticResource CaptionLabel}"/></StackPanel></Border>
               <Border Style="{StaticResource CardStyle}"><Grid><StackPanel Spacing="6"><TextBlock x:Uid="Text190" Text="应用主题" Style="{StaticResource SectionLabel}"/></StackPanel><ComboBox x:Name="ThemePicker" HorizontalAlignment="Right" Width="150" SelectedIndex="2" SelectionChanged="Theme_SelectionChanged"><ComboBoxItem x:Uid="Text191" Content="跟随系统"/><ComboBoxItem x:Uid="Text192" Content="浅色"/><ComboBoxItem x:Uid="Text193" Content="深色"/></ComboBox></Grid></Border>
-              <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="13"><TextBlock x:Uid="Text194" Text="设备与支持范围" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="AboutDevice" Text="HONOR MagicBook X14 2024 · FRI-HXX · BIOS 1.15" FontSize="16"/><TextBlock x:Name="AboutDeviceDetail" Text="Ryzen 5 7640HS / Radeon 760M" Style="{StaticResource CaptionLabel}"/><TextBlock Text="仅 FRI-HXX / M1030 / BIOS 1.15 / 7640HS / Radeon 760M 通过适配检查；其他设备仅作展示。" Style="{StaticResource CaptionLabel}"/></StackPanel></Border>
+              <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="13"><TextBlock x:Uid="Text194" Text="设备与支持范围" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="AboutDevice" Text="荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56） · FRI-HXX · 支持 BIOS 1.15" FontSize="16"/><TextBlock x:Name="AboutDeviceDetail" Text="机型代号 FRI-HXX · Ryzen 5 7640HS / Radeon 760M" Style="{StaticResource CaptionLabel}"/><TextBlock Text="仅适配荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56；机型代号 FRI-HXX；支持 BIOS 1.15）；其他设备仅作展示。" Style="{StaticResource CaptionLabel}"/></StackPanel></Border>
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="14"><Grid><TextBlock x:Uid="Text196" Text="最近操作" Style="{StaticResource SectionLabel}"/><Button x:Uid="Text197" Content="打开记录文件夹" HorizontalAlignment="Right" Click="OpenLogs_Click"/></Grid><ListView x:Name="ActivityList" SelectionMode="None" MaxHeight="230"/><TextBlock x:Name="FooterVersion" Text="Honor Control" Foreground="{ThemeResource MutedBrush}" FontSize="12"/></StackPanel></Border>
             </StackPanel>
 
             <StackPanel x:Name="AboutPage" Spacing="22" Visibility="Collapsed">
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="12">
-                <TextBlock x:Name="AboutVersion" Text="Honor Control 0.15.0" FontSize="28" FontWeight="SemiBold"/>
+                <TextBlock x:Name="AboutVersion" Text="Honor Control 1.0.0" FontSize="28" FontWeight="SemiBold"/>
                 <TextBlock Text="FRI-H56 设备控制工具 · WinUI 3 · Windows x64" Style="{StaticResource CaptionLabel}"/>
-                <TextBlock Text="充电保护、智能／高能性能模式、Fn 行模式与 Windows 系统伽马显示。无需运行荣耀电脑管家。" TextWrapping="Wrap"/>
+                <TextBlock Text="充电保护、平衡／高能性能模式、Fn 行模式与 Windows 系统伽马显示。无需运行荣耀电脑管家。" TextWrapping="Wrap"/>
                 <StackPanel Orientation="Horizontal" Spacing="10"><Button x:Uid="Text200" Content="GitHub 源码" Click="Repository_Click"/><Button x:Uid="Text201" Content="许可协议" Click="License_Click"/></StackPanel>
                 <TextBlock x:Uid="Text202" Text="原作者 wzk112 · 当前维护 dingc · 非商业个人研究许可 · 非荣耀官方产品" Style="{StaticResource CaptionLabel}"/>
               </StackPanel></Border>
@@ -127,7 +119,7 @@
               </StackPanel></Border>
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="10">
                 <TextBlock x:Uid="Text211" Text="支持范围" Style="{StaticResource SectionLabel}"/>
-                <TextBlock x:Name="AboutScopeText" Text="已验证 FRI-HXX / M1030 / BIOS 1.15 / 7640HS / Radeon 760M。其他设备仅作展示，不执行固件写入。" Style="{StaticResource CaptionLabel}"/>
+                <TextBlock x:Name="AboutScopeText" Text="已验证荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56；机型代号 FRI-HXX；支持 BIOS 1.15）。其他设备仅作展示，不执行固件写入。" Style="{StaticResource CaptionLabel}"/>
                 <TextBlock x:Name="AboutDataText" Text="应用日志与恢复记录只保存在本机的 LocalAppData\\HonorControl 目录。" Style="{StaticResource CaptionLabel}"/>
               </StackPanel></Border>
             </StackPanel>

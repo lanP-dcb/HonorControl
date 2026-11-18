@@ -1,6 +1,10 @@
 param([string]$SourceDirectory=$PSScriptRoot)
 $ErrorActionPreference='Stop'
 if(-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){throw 'Run this installer as administrator.'}
+$desktopRuntime=Join-Path $env:ProgramFiles 'dotnet\shared\Microsoft.WindowsDesktop.App'
+$runtimeFound=$false
+if(Test-Path -LiteralPath $desktopRuntime){foreach($dir in Get-ChildItem -LiteralPath $desktopRuntime -Directory -ErrorAction SilentlyContinue){if($dir.Name -match '^8\.'){$runtimeFound=$true;break}}}
+if(-not $runtimeFound){throw 'Microsoft .NET 8 Desktop Runtime (x64) is required. Install it from https://dotnet.microsoft.com/download/dotnet/8.0 and run setup again.'}
 $source=[IO.Path]::GetFullPath($SourceDirectory).TrimEnd('\')
 $install=Join-Path $env:ProgramFiles 'HonorControl'
 foreach($required in @('HonorControl.exe','HonorControl.Broker.exe','Backend\HonorStandalone.exe')){if(-not (Test-Path -LiteralPath (Join-Path $source $required) -PathType Leaf)){throw ('Missing package file: '+$required)}}
@@ -57,14 +61,12 @@ $agentAction=New-ScheduledTaskAction -Execute (Join-Path $install 'HonorControl.
 $uiAction=New-ScheduledTaskAction -Execute (Join-Path $install 'HonorControl.exe') -Argument '--background' -WorkingDirectory $install
 $null=Register-ScheduledTask -TaskName 'HonorControl.Agent' -Action $agentAction -Trigger $trigger -Principal $agentPrincipal -Settings $settings -Description 'Honor Control fixed hardware commands.' -Force
 $null=Register-ScheduledTask -TaskName 'HonorControl.UI' -Action $uiAction -Trigger $trigger -Principal $uiPrincipal -Settings $settings -Description 'Honor Control tray and background UI.' -Force
-@{Version='0.15.0';UserSid=$userSid;InstalledUtc=[DateTime]::UtcNow.ToString('o');AutoStart=$true;InstallDirectory=$install}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $install 'installed.json') -Encoding UTF8
+@{Version='1.0.0';UserSid=$userSid;InstalledUtc=[DateTime]::UtcNow.ToString('o');AutoStart=$true;InstallDirectory=$install}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $install 'installed.json') -Encoding UTF8
 $shell=New-Object -ComObject WScript.Shell
 $startMenu=Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Honor Control.lnk'
 $shortcut=$shell.CreateShortcut($startMenu);$shortcut.TargetPath=Join-Path $install 'HonorControl.exe';$shortcut.WorkingDirectory=$install;$shortcut.IconLocation=(Join-Path $install 'Assets\HonorControl.ico')+',0';$shortcut.Save()
 $uninstallKey='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\HonorControl'
 New-Item -Path $uninstallKey -Force|Out-Null
-foreach($pair in @(@('DisplayName','Honor Control'),@('DisplayVersion','0.15.0'),@('Publisher','wzk112'),@('InstallLocation',$install),@('DisplayIcon',(Join-Path $install 'Assets\HonorControl.ico')))){New-ItemProperty -LiteralPath $uninstallKey -Name $pair[0] -Value $pair[1] -PropertyType String -Force|Out-Null}
+foreach($pair in @(@('DisplayName','Honor Control'),@('DisplayVersion','1.0.0'),@('Publisher','wzk112'),@('InstallLocation',$install),@('DisplayIcon',(Join-Path $install 'Assets\HonorControl.ico')))){New-ItemProperty -LiteralPath $uninstallKey -Name $pair[0] -Value $pair[1] -PropertyType String -Force|Out-Null}
 if(Test-Path -LiteralPath (Join-Path $install 'HonorControl.Uninstall.exe')){New-ItemProperty -LiteralPath $uninstallKey -Name 'UninstallString' -Value ('"'+(Join-Path $install 'HonorControl.Uninstall.exe')+'"') -PropertyType String -Force | Out-Null}
-Start-ScheduledTask -TaskName 'HonorControl.Agent'
-Start-ScheduledTask -TaskName 'HonorControl.UI'
 @{Installed=$true;Path=$install;UserSid=$userSid;TaskNames=@('HonorControl.Agent','HonorControl.UI')}|ConvertTo-Json -Depth 4

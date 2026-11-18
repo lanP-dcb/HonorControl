@@ -43,7 +43,7 @@ public partial class App : Application
         _showWait = ThreadPool.RegisterWaitForSingleObject(_show, (_, _) => main.DispatcherQueue.TryEnqueue(main.ShowMainWindow), null, Timeout.Infinite, false);
         _quit = new EventWaitHandle(false, EventResetMode.AutoReset, "Local\\HonorControl.Quit." + RuntimeIdentity.Sid);
         _quitWait = ThreadPool.RegisterWaitForSingleObject(_quit, (_, _) => main.DispatcherQueue.TryEnqueue(main.RequestExit), null, Timeout.Infinite, false);
-        if (AppPaths.BackgroundLaunch) main.AppWindow.Show(false);
+        if (AppPaths.BackgroundLaunch) main.AppWindow.Hide();
         else _window.Activate();
     }
 }

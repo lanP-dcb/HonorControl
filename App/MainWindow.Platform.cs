@@ -51,18 +51,18 @@ public sealed partial class MainWindow
             string name = _platformDisplay.Length > 0 ? _platformDisplay : model;
             string bios = _platformBios.Length > 0 ? _platformBios : "—";
             FooterModel.Text = name.ToUpperInvariant();
-            FooterBios.Text = model + " · BIOS " + bios;
-            AboutDevice.Text = name + " · " + model + " · BIOS " + bios;
+            FooterBios.Text = model + L.T(" · 支持 BIOS ") + bios;
+            AboutDevice.Text = name + " · " + model + L.T(" · 支持 BIOS ") + bios;
             AboutDeviceDetail.Text = _platformDetail.Length > 0 ? _platformDetail : _platformCpu;
             if (!_platformSupported)
             {
                 UnsupportedBanner.Title = L.T("设备未通过适配检查");
-                UnsupportedBanner.Message = L.T("当前设备不在 Honor Control 的适配范围内：") + model + " / BIOS " + bios + L.T("。所有功能仅作展示，不会向设备写入任何设置。");
+                UnsupportedBanner.Message = L.T("当前设备不在 Honor Control 的适配范围内：") + model + L.T(" / BIOS ") + bios + L.T("。所有功能仅作展示，不会向设备写入任何设置。");
                 UnsupportedBanner.IsOpen = true;
-                AboutScopeText.Text = L.T("当前设备未通过适配检查。所有控制仅作展示，不会读取或写入设备。支持的机型为 HONOR MagicBook X14 2024（FRI-HXX / M1030 / BIOS 1.15 / 7640HS / Radeon 760M）。");
+                AboutScopeText.Text = L.T("当前设备未通过适配检查。所有控制仅作展示，不会读取或写入设备。支持的机型为荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56；机型代号 FRI-HXX；支持 BIOS 1.15）。");
             }
             else
-                AboutScopeText.Text = L.T("当前机型为 ") + model + " / BIOS " + bios + L.T("：已适配充电保护、智能/高能模式、Fn 与 Windows 系统伽马显示。");
+                AboutScopeText.Text = L.T("当前机型为 ") + name + L.T("：已适配充电保护、平衡/高能模式、Fn 与 Windows 系统伽马显示。");
         }
         if (_tray is not null) _tray.CanMode = _capModeWrite;
         if (!_capModeWrite)

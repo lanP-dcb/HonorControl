@@ -43,12 +43,31 @@ internal sealed class BackendClient : IAsyncDisposable
             if (IsConnected) return;
             if (AppPaths.Installed)
             {
-                _pipe = new NamedPipeClientStream(".", RuntimeIdentity.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
-                await _pipe.ConnectAsync(10000);
-                _reader = new(_pipe, new UTF8Encoding(false), false, 4096, true);
-                _writer = new(_pipe, new UTF8Encoding(false), 4096, true) { AutoFlush = true };
-                await ExchangeAsync(new("hello"));
-                return;
+                bool brokerStarted = false;
+                if (!BrokerRunning())
+                {
+                    await StartResidentBrokerAsync();
+                    brokerStarted = true;
+                }
+                for (int attempt = 0; attempt < 40; attempt++)
+                {
+                    try
+                    {
+                        await ConnectResidentAsync(1500);
+                        return;
+                    }
+                    catch (TimeoutException) { }
+                    catch (IOException) { }
+                    catch (OperationCanceledException) { }
+                    await DisconnectAsync();
+                    if (!brokerStarted && attempt == 10 && !BrokerRunning())
+                    {
+                        await StartResidentBrokerAsync();
+                        brokerStarted = true;
+                    }
+                    await Task.Delay(500);
+                }
+                throw new TimeoutException(L.T("无法连接管理员控制会话，请重新打开 Honor Control 后重试。"));
             }
             string name;
             if (!_existingPipeUsed && AppPaths.ExistingPipeName is string existing)
@@ -81,7 +100,7 @@ internal sealed class BackendClient : IAsyncDisposable
 
     public async Task<JsonElement> DisplayGammaAsync(string command, params string[] arguments)
     {
-        var allowed = new[] { "display-gamma-status", "display-gamma-apply", "display-gamma-restore" };
+        var allowed = new[] { "display-gamma-status", "display-gamma-apply", "display-gamma-restore", "display-gamma-rhythm-start", "display-gamma-rhythm-stop", "display-gamma-rhythm-tick" };
         if (!allowed.Contains(command)) throw new ArgumentException(L.T("不支持的显示调节操作。"));
         await _displayLock.WaitAsync();
         try { return await RunStandaloneAsync(command, arguments); }
@@ -94,6 +113,51 @@ internal sealed class BackendClient : IAsyncDisposable
         await _displayLock.WaitAsync();
         try { return await RunStandaloneAsync("platform-status"); }
         finally { _displayLock.Release(); }
+    }
+
+    private async Task ConnectResidentAsync(int timeoutMilliseconds)
+    {
+        var pipe = new NamedPipeClientStream(".", RuntimeIdentity.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+        try
+        {
+            await pipe.ConnectAsync(timeoutMilliseconds);
+        }
+        catch
+        {
+            await pipe.DisposeAsync();
+            throw;
+        }
+        _pipe = pipe;
+        _reader = new(_pipe, new UTF8Encoding(false), false, 4096, true);
+        _writer = new(_pipe, new UTF8Encoding(false), 4096, true) { AutoFlush = true };
+        await ExchangeAsync(new("hello"));
+    }
+
+    private static bool BrokerRunning() => Process.GetProcessesByName("HonorControl.Broker").Length > 0;
+
+    private static async Task StartResidentBrokerAsync()
+    {
+        bool started = false;
+        string schtasks = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "schtasks.exe");
+        if (File.Exists(schtasks))
+        {
+            var start = new ProcessStartInfo(schtasks) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
+            start.ArgumentList.Add("/Run");
+            start.ArgumentList.Add("/TN");
+            start.ArgumentList.Add(RuntimeIdentity.AgentTask);
+            using var process = Process.Start(start);
+            if (process is not null)
+            {
+                await process.WaitForExitAsync();
+                started = process.ExitCode == 0;
+            }
+        }
+        if (started) return;
+        var broker = Path.Combine(AppContext.BaseDirectory, "HonorControl.Broker.exe");
+        var fallback = new ProcessStartInfo(broker) { UseShellExecute = true, Verb = "runas", WindowStyle = ProcessWindowStyle.Hidden, WorkingDirectory = AppContext.BaseDirectory };
+        fallback.ArgumentList.Add("--resident");
+        fallback.ArgumentList.Add("--allow-writes");
+        Process.Start(fallback);
     }
 
     private async Task<JsonElement> ExchangeAsync(ControlRequest request)
