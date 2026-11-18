@@ -1,5 +1,12 @@
 # Changelog / 更新记录
 
+## 0.15.3
+
+- 改为框架依赖发布，安装包不再携带 .NET 8 运行时；安装目录由约 236 MB 降至约 95 MB。
+- 安装器启动时检查 .NET 8 Desktop Runtime（x64）；缺失时提示并打开微软官方下载页，不再继续安装。
+- Switches to a framework-dependent build and stops bundling the .NET 8 runtime; the installed payload drops from about 236 MB to about 95 MB.
+- Setup now checks for the .NET 8 Desktop Runtime (x64); if it is missing, setup prompts and opens Microsoft's official download page instead of continuing.
+
 ## 0.15.2
 
 - 修复开机自启时窗口短暂闪现后进入后台的问题。

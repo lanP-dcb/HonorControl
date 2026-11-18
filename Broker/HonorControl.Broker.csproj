@@ -1,14 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <SelfContained>true</SelfContained>
+    <SelfContained>false</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>HonorControl.Broker</AssemblyName>
-    <Version>0.15.2</Version>
+    <Version>0.15.3</Version>
   </PropertyGroup>
   <ItemGroup><Compile Include="..\Shared\Protocol.cs" Link="Protocol.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Shared\RuntimeIdentity.cs" Link="Services\RuntimeIdentity.cs" /></ItemGroup>

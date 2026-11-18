@@ -10,16 +10,17 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 [assembly: AssemblyTitle("Honor Control Setup")]
 [assembly: AssemblyProduct("Honor Control")]
-[assembly: AssemblyVersion("0.15.2.0")]
-[assembly: AssemblyFileVersion("0.15.2.0")]
+[assembly: AssemblyVersion("0.15.3.0")]
+[assembly: AssemblyFileVersion("0.15.3.0")]
 [assembly: AssemblyCopyright("Copyright 2026 wzk112")]
 
 internal static class SetupProgram
 {
-    internal const string Version = "0.15.2";
+    internal const string Version = "0.15.3";
 #if UNINSTALL
     internal static readonly bool Uninstall = true;
 #else
@@ -41,7 +42,69 @@ internal static class SetupProgram
         }
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
+        if (!Uninstall && !DesktopRuntime.IsNet8DesktopRuntimeInstalled())
+        {
+            bool silentInstall = Array.Exists(Environment.GetCommandLineArgs(), value => value.Equals("/SILENT", StringComparison.OrdinalIgnoreCase));
+            string message = Thread.CurrentThread.CurrentUICulture.Name.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
+                ? "未检测到 .NET 8 Desktop Runtime（x64）。\r\n\r\nHonor Control 使用框架依赖发布，需要先安装 .NET 8 Desktop Runtime，安装后再运行本安装程序。\r\n\r\n是否打开 Microsoft 官方下载页面？"
+                : "Microsoft .NET 8 Desktop Runtime (x64) was not found.\r\n\r\nHonor Control is framework-dependent and requires the .NET 8 Desktop Runtime. Install it, then run this setup again.\r\n\r\nOpen the official Microsoft download page?";
+            if (silentInstall)
+            {
+                string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "HonorControl", "Setup");
+                Directory.CreateDirectory(folder);
+                File.WriteAllText(Path.Combine(folder, "setup-error.log"), message);
+            }
+            else if (MessageBox.Show(message, "Honor Control", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            {
+                Process.Start(new ProcessStartInfo(DesktopRuntime.DownloadUrl) { UseShellExecute = true });
+            }
+            Environment.ExitCode = 2;
+            return;
+        }
         Application.Run(new SetupForm());
+    }
+}
+
+internal static class DesktopRuntime
+{
+    internal const string DownloadUrl = "https://dotnet.microsoft.com/download/dotnet/8.0";
+
+    internal static bool IsNet8DesktopRuntimeInstalled()
+    {
+        foreach (string root in RootDirectories())
+        {
+            string shared = Path.Combine(root, "shared", "Microsoft.WindowsDesktop.App");
+            if (!Directory.Exists(shared)) continue;
+            foreach (string directory in Directory.GetDirectories(shared, "8.*"))
+            {
+                string name = Path.GetFileName(directory);
+                int dash = name.IndexOf('-');
+                if (dash >= 0) name = name.Substring(0, dash);
+                Version version;
+                if (Version.TryParse(name, out version) && version.Major == 8) return true;
+            }
+        }
+        try
+        {
+            using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64)
+                .OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App"))
+            {
+                if (key != null)
+                    foreach (string value in key.GetValueNames())
+                        if (value.StartsWith("8.", StringComparison.Ordinal)) return true;
+            }
+        }
+        catch { }
+        return false;
+    }
+
+    private static IEnumerable<string> RootDirectories()
+    {
+        string machine = Environment.GetEnvironmentVariable("ProgramW6432");
+        if (string.IsNullOrEmpty(machine)) machine = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        if (!string.IsNullOrEmpty(machine)) yield return Path.Combine(machine, "dotnet");
+        string configured = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+        if (!string.IsNullOrEmpty(configured)) yield return configured;
     }
 }
 
@@ -173,7 +236,7 @@ internal sealed class SetupForm : Form
         path.Text = SetupProgram.InstallPath;
         notes.Text = SetupProgram.Uninstall
             ? TextFor("将停止登录任务，退出托盘并恢复自动控制所修改的设置，然后移除应用。\r\n\r\n个人偏好、日志与显示伽马备份保留在 LocalAppData\\HonorControl。不会卸载硬件驱动。", "Stops sign-in tasks, exits the tray, restores automatic-control changes and removes the application.\r\n\r\nPreferences, logs and display gamma backups stay in LocalAppData\\HonorControl. Hardware drivers are retained.")
-            : TextFor("安装到 Program Files，创建开始菜单入口并注册登录启动。升级保留个人设置和显示伽马备份。\r\n\r\n已验证 FRI-HXX / M1030 / BIOS 1.15 / 7640HS + Radeon 760M。充电保护与智能/高能模式需在退出荣耀电脑管家性能后台后写入；显示使用 Windows 伽马表，不导入 ICC/LUT。\r\n\r\n首次打开有具体使用教程和官方组件迁移清单。不要删除 ACPI、AMD 显卡、音频和 HID 驱动。\r\n\r\n仅供非商业个人使用与研究。禁止商用。", "Installs in Program Files with a Start menu entry and sign-in startup. Upgrades preserve preferences and display gamma backups.\r\n\r\nVerified on FRI-HXX / M1030 / BIOS 1.15 / 7640HS + Radeon 760M. Charge protection and Smart/High performance modes require HONOR PC Manager performance services to be stopped first. Display uses the Windows gamma ramp; no ICC/LUT is imported.\r\n\r\nThe first-launch tutorial includes usage steps and an OEM migration checklist. Keep ACPI, AMD graphics, audio and HID drivers.\r\n\r\nNoncommercial personal use and research only. Commercial use prohibited.");
+            : TextFor("安装到 Program Files，创建开始菜单入口并注册登录启动。升级保留个人设置和显示伽马备份。\r\n\r\n需要 .NET 8 Desktop Runtime（x64）。如果未安装，安装器会提示并打开微软官方下载页面。\r\n\r\n已验证 FRI-HXX / M1030 / BIOS 1.15 / 7640HS + Radeon 760M。充电保护与平衡/高能模式需在退出荣耀电脑管家性能后台后写入；显示使用 Windows 伽马表，不导入 ICC/LUT。\r\n\r\n首次打开有具体使用教程和官方组件迁移清单。不要删除 ACPI、AMD 显卡、音频和 HID 驱动。\r\n\r\n仅供非商业个人使用与研究。禁止商用。", "Installs in Program Files with a Start menu entry and sign-in startup. Upgrades preserve preferences and display gamma backups.\r\n\r\nRequires the .NET 8 Desktop Runtime (x64). If it is missing, setup prompts and opens Microsoft's official download page.\r\n\r\nVerified on FRI-HXX / M1030 / BIOS 1.15 / 7640HS + Radeon 760M. Charge protection and Balanced/Performance modes require HONOR PC Manager performance services to be stopped first. Display uses the Windows gamma ramp; no ICC/LUT is imported.\r\n\r\nThe first-launch tutorial includes usage steps and an OEM migration checklist. Keep ACPI, AMD graphics, audio and HID drivers.\r\n\r\nNoncommercial personal use and research only. Commercial use prohibited.");
         if (complete && !SetupProgram.Uninstall)
         {
             notes.Text = TextFor("应用已安装。打开 Honor Control，在「性能与散热」检查充电保护与性能模式。", "The app is installed. Open Honor Control and check charge protection and performance modes under Performance and cooling.");
