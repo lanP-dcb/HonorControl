@@ -101,7 +101,7 @@ internal sealed class SetupForm : Form
         progress.Maximum = 100;
         open.AutoSize = true;
         open.Margin = new Padding(0, 0, 0, 8);
-        open.Checked = true; open.Visible = false;
+        open.Checked = false; open.Visible = false;
         foreach (var button in new[] { install, cancel, license })
         {
             button.AutoSize = true;
@@ -179,8 +179,8 @@ internal sealed class SetupForm : Form
             notes.Text = TextFor("应用已安装。打开 Honor Control，在「性能与散热」检查充电保护与性能模式。", "The app is installed. Open Honor Control and check charge protection and performance modes under Performance and cooling.");
         }
         if (!working) status.Text = complete ? TextFor("已完成。", "Completed.") : TextFor("准备就绪", "Ready");
-        install.Text = complete ? TextFor("完成", "Finish") : SetupProgram.Uninstall ? TextFor("卸载", "Uninstall") : TextFor("安装", "Install");
-        cancel.Text = TextFor("关闭", "Close"); license.Text = TextFor("许可协议", "License"); open.Text = TextFor("打开 Honor Control", "Open Honor Control");
+        install.Text = complete ? TextFor("确定", "OK") : SetupProgram.Uninstall ? TextFor("卸载", "Uninstall") : TextFor("安装", "Install");
+        cancel.Text = TextFor("关闭", "Close"); license.Text = TextFor("许可协议", "License"); open.Text = TextFor("运行 Honor Control", "Run Honor Control");
     }
 
     private void ShowLicense()
@@ -287,6 +287,15 @@ internal sealed class SetupForm : Form
 
     private static void OpenApplication()
     {
-        try { using (var signal = EventWaitHandle.OpenExisting("Local\\HonorControl.Show." + WindowsIdentity.GetCurrent().User.Value)) signal.Set(); } catch { }
+        try { using (var signal = EventWaitHandle.OpenExisting("Local\\HonorControl.Show." + WindowsIdentity.GetCurrent().User.Value)) { signal.Set(); return; } } catch { }
+        try
+        {
+            Process.Start(new ProcessStartInfo(Path.Combine(SetupProgram.InstallPath, "HonorControl.exe"))
+            {
+                UseShellExecute = true,
+                WorkingDirectory = SetupProgram.InstallPath
+            });
+        }
+        catch { }
     }
 }

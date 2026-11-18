@@ -19,7 +19,7 @@ Independent WinUI 3 device controls for the **HONOR MagicBook X14 2024 (FRI-H56 
 
 ## Install
 
-Download `HonorControl-0.15.0-Setup-x64.exe` from [Releases](https://github.com/wzk112/HonorControl/releases), double-click it and approve UAC once. The installer handles files, the Start menu and sign-in tasks. No manual PowerShell step is required.
+Download `HonorControl-0.15.0-Setup-x64.exe` from [Releases](https://github.com/wzk112/HonorControl/releases), double-click it and approve UAC once. The installer handles files, the Start menu and sign-in tasks. No manual PowerShell step is required. Setup does not launch the app automatically; tick "Run Honor Control" on the finish page and click OK to start it.
 
 The target is `C:\Program Files\HonorControl` with two sign-in tasks, `HonorControl.Agent` and `HonorControl.UI`. Start from the Start menu. Closing the window keeps the tray active. Exiting from the tray pauses until next sign-in or manual launch. Upgrades preserve preferences.
 

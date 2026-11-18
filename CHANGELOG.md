@@ -8,12 +8,14 @@
 - 覆盖安装时会删除旧版本残留文件，避免升级后仍保留已移除的组件。
 - 显示页恢复“亮度节律（系统伽马）”，并移除“夜间模式 / 亮度与显示 / 高级显示设置”三个系统设置跳转按钮。
 - 性能与散热页移除风扇卡片，不再读取风扇传感器或显示转速。
+- 安装完成后默认不自动运行；结束页可勾选“运行 Honor Control”，点击“确定”后按勾选状态启动。
 - Adapts the HONOR MagicBook X14 2024 (FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M): charging protection, Smart/Performance modes and system gamma display; network, audio, GPU, DTT, fan status and presets are capability-hidden.
 - Adds custom charge thresholds, a master switch (Home when on, charge-to-full when off) and firmware readback; enables Fn / F1–F12 priority; shows HUNTER as display-only; removes the refresh-rate setting; and adds first-run unsupported-device notice, a non-closable red banner and display-only controls.
 - Simplifies the app and installer: removes audio, network, GPU, DTT, automatic performance, process scheduling, hardware colour/ICC/LUT, refresh-rate, fan-status reading and fan-write modules; the installer no longer ships colour calibration components, scene tables, App SDK AI/ML/Widgets runtimes or extra locale folders, reducing the payload from about 288 MB to about 236 MB.
 - Upgrades now remove files left by older versions so deleted components do not remain in the installation directory.
 - Restores brightness rhythm (system gamma) on the display page and removes the Night light / Brightness and display / Advanced display settings shortcuts.
 - Removes the fan card from the Performance and cooling page; fan sensors are no longer read or displayed.
+- Setup no longer launches the app automatically; the finish page offers a "Run Honor Control" checkbox and starts it only if ticked when OK is clicked.
 
 ## 0.14.5
 

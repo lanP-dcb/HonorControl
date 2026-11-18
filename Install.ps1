@@ -65,6 +65,4 @@ $uninstallKey='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\HonorCo
 New-Item -Path $uninstallKey -Force|Out-Null
 foreach($pair in @(@('DisplayName','Honor Control'),@('DisplayVersion','0.15.0'),@('Publisher','wzk112'),@('InstallLocation',$install),@('DisplayIcon',(Join-Path $install 'Assets\HonorControl.ico')))){New-ItemProperty -LiteralPath $uninstallKey -Name $pair[0] -Value $pair[1] -PropertyType String -Force|Out-Null}
 if(Test-Path -LiteralPath (Join-Path $install 'HonorControl.Uninstall.exe')){New-ItemProperty -LiteralPath $uninstallKey -Name 'UninstallString' -Value ('"'+(Join-Path $install 'HonorControl.Uninstall.exe')+'"') -PropertyType String -Force | Out-Null}
-Start-ScheduledTask -TaskName 'HonorControl.Agent'
-Start-ScheduledTask -TaskName 'HonorControl.UI'
 @{Installed=$true;Path=$install;UserSid=$userSid;TaskNames=@('HonorControl.Agent','HonorControl.UI')}|ConvertTo-Json -Depth 4

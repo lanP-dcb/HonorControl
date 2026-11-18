@@ -10,7 +10,7 @@ This model has no factory calibration data to import and does not use ICC/LUT im
 
 ## Install or upgrade
 
-Download HonorControl-0.15.0-Setup-x64.exe from Releases. Double-click, approve UAC and choose Install. The setup handles Program Files, Start menu and the HonorControl.UI / HonorControl.Agent sign-in tasks. There is no manual PowerShell step. Use your usual signed-in administrator account.
+Download HonorControl-0.15.0-Setup-x64.exe from Releases. Double-click, approve UAC and choose Install. The setup handles Program Files, Start menu and the HonorControl.UI / HonorControl.Agent sign-in tasks. There is no manual PowerShell step. The finish page offers an optional "Run Honor Control" checkbox; setup does not launch the app unless it is ticked when you click OK. Use your usual signed-in administrator account.
 
 Open from Start. The tutorial includes usage steps and OEM migration notes. Change Chinese / English in About and restart the UI. Upgrades preserve preferences and logs. Uninstall through Windows Installed apps. Personal data, logs and drivers are retained. Developers can still use Install.ps1 for extracted build output.
 
