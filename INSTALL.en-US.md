@@ -1,61 +1,53 @@
 # Installation and migration
 
-Honor Control 0.14.5 targets Windows x64 on HONOR MagicBook Pro 16 DRA-XX / BIOS 1.13. Install under your usual signed-in administrator account, rather than entering another account's credentials.
+Honor Control 0.15.0 targets Windows x64 on the HONOR MagicBook X14 2024 (FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M). The installer enables Broker writes, but only capability-approved charge and performance controls are executed. Install under your usual signed-in administrator account, rather than entering another account's credentials.
 
 ## Calibration
 
-Setup retains existing Honor Control calibration. On a first install, it can import the original ICC profiles and two factory calibration XML files from the Windows color directory when it finds the verified TMA2024 internal panel on DRA-XX and both XML files match the device serial number.
+The HONOR PC Manager package for this model does not provide factory ICC, LUT or colour-management data for the FRI/H family, so Setup does not import factory colour data. Display effects use the Windows system gamma ramp and can be restored to the original settings.
 
-If Windows was reinstalled and the factory files are missing, or if the panel was replaced, use a backup for that physical panel. A complete backup contains HonorNative.icc, HonorsRGB.icc, HonorP3.icc, sRGB.lut and P3.lut.
-
-Run the installed import script from administrator PowerShell, then choose Install / check ICC in Settings and logs:
-
-```powershell
-.\Import-Calibration.ps1 -SourceDirectory 'D:\MyDeviceCalibration'
-```
-
-The tool checks file structure and LUT values; it cannot establish whether the data belongs to your physical panel. Other functions remain available without it; color switching requires the data.
+This model has no factory calibration data to import and does not use ICC/LUT imports; display adjustment uses the Windows system gamma ramp directly.
 
 ## Install or upgrade
 
-Download HonorControl-0.14.5-Setup-x64.exe from Releases. Double-click, approve UAC and choose Install. The setup handles Program Files, Start menu and the HonorControl.UI / HonorControl.Agent sign-in tasks. There is no manual PowerShell step. Use your usual signed-in administrator account.
+Download HonorControl-0.15.0-Setup-x64.exe from Releases. Double-click, approve UAC and choose Install. The setup handles Program Files, Start menu and the HonorControl.UI / HonorControl.Agent sign-in tasks. There is no manual PowerShell step. Use your usual signed-in administrator account.
 
-Open from Start. The tutorial includes usage steps, specific OEM service names and live service detection. Change Chinese / English in About and restart the UI. Upgrades preserve preferences and calibration. Uninstall through Windows Installed apps. Personal data and drivers are retained; calibration is cached in LocalAppData\HonorControl\Calibration and reused on reinstall. Developers can still use Install.ps1 for extracted build output.
-## Remove OEM software
+Open from Start. The tutorial includes usage steps and OEM migration notes. Change Chinese / English in About and restart the UI. Upgrades preserve preferences and logs. Uninstall through Windows Installed apps. Personal data, logs and drivers are retained. Developers can still use Install.ps1 for extracted build output.
 
-First verify Honor Control. Use Windows Installed apps / Programs and Features to uninstall HONOR PC Manager and separate OSD, HUNTERCAMP, Magic Animation and YOYO software. Reboot if requested. See [Microsoft uninstall instructions](https://support.microsoft.com/en-gb/windows/uninstall-or-remove-apps-and-programs-in-windows-4b55f974-2cc6-2d2b-d092-5905080eaf98) and [HONOR instructions](https://www.honor.com/cn/support/content/zh-cn15813919/).
+## OEM components and removal
 
-Preview the remaining software files and registrations:
+The OEM performance, colour and OSD backends may write the same device settings as Honor Control. Install and verify Honor Control first, then uninstall HONOR PC Manager from Windows Installed apps / Programs and Features. Remove separate OSD, HUNTERCAMP, Magic Animation and YOYO software as needed. See [Microsoft uninstall instructions](https://support.microsoft.com/en-gb/windows/uninstall-or-remove-apps-and-programs-in-windows-4b55f974-2cc6-2d2b-d092-5905080eaf98) and [HONOR instructions](https://www.honor.com/cn/support/content/zh-cn15813919/).
 
-```powershell
-.\Clean-HonorSoftware.ps1
-```
+After uninstalling HONOR PC Manager, Honor Control does not depend on `PCManager.exe`, `MBAMainService`, `HnPerformanceCenter`, `HnPerfPowerNexus`, `HnLcdEnhancement`, `SmartChargePlugin` or ICC/LUT files. Charge and Smart/High use the local ACPI/WMI firmware interface; display gamma uses Windows APIs.
 
-Apply the printed scope from administrator PowerShell:
-
-```powershell
-.\Clean-HonorSoftware.ps1 -Apply
-```
-
-Targets exact HONOR application folders, software services / tasks / startup references, known uninstall entries, three OEM Appx packages and selected application registry branches. PnP devices, DriverStore and audio calibration are excluded. Reports and registry backups stay in %LOCALAPPDATA%\HonorControl\Migration. No automatic reboot. Locked leftovers are reported.
+Keep these low-level components:
 
 | Keep | Needed for |
 | --- | --- |
-| ACPI, WMI, chipset and firmware | Modes, fans, Fn and charging |
-| Intel Dynamic Tuning | Scene power policy |
-| Intel graphics and matching ICC / LUT | Color |
-| NVIDIA display driver | Discrete GPU control and offsets |
-| Histen / Honor audio APO, Awinic and calibration | Audio effects |
-| Fortemedia APO and FMAPOService | Microphone pickup |
-| Realtek, Intel Smart Sound and audio services | Audio endpoints |
-| Camera, HID, network and device drivers | Physical devices |
+| `ACPI\PNP0C14\HWMI` ACPI/WMI device (Windows `wmiacpi`) and BIOS/UEFI firmware | Charge protection and Smart/High |
+| `ACPI\PNP0C14\HWMI` ACPI/WMI device | Fn / F1–F12 priority |
+| Windows system gamma ramp | Eye-care, reading mode and colour temperature; no `HnLcdEnhancement`, ICC or hardware LUT |
+| Audio, fan presets, GPU switching and DTT | Removed in this release; corresponding modules are not loaded |
 
-An HONOR vendor name in a driver is not sufficient reason to delete it. ProgramData\HonorEffect and Windows driver folders are required by audio functions.
+Do not delete the `ACPI\PNP0C14\HWMI` device, AMD graphics driver, HID or chipset drivers. An HONOR vendor name can also appear in camera or audio drivers; deleting those affects the corresponding hardware.
+
+Recommended removal order:
+
+1. Install and verify Honor Control: charge thresholds, Smart/High, Fn and gamma.
+2. Exit the HONOR PC Manager performance backend; confirm `HnPerformanceCenter` and `HnPerfPowerNexus` are gone. `MBAProcessWatcher` may restart them; stop `MBAMainService` if necessary.
+3. Uninstall HONOR PC Manager from Windows Installed apps, then reboot.
+4. Confirm `ACPI\PNP0C14\HWMI` is still healthy in Device Manager; run `platform-status` and `charge-status`, then test one charge write, Smart/High switching and gamma restore.
+5. Use the bundled cleanup script only after verification. It previews by default; apply the printed scope from administrator PowerShell with `-Apply`.
+
+```powershell
+.\Clean-HonorSoftware.ps1
+.\Clean-HonorSoftware.ps1 -Apply
+```
+
+If WMI returns access denied or the device is missing after removal, reinstall the HONOR ACPI/BIOS driver package for this exact model rather than the whole PC Manager. The cleanup script does not delete DriverStore, PnP devices, `ProgramData\HonorEffect` or audio drivers, and does not reboot; reports and registry backups stay in `%LOCALAPPDATA%\HonorControl\Migration`.
 
 ## Check and recover
 
-After sign-in, check tray / hardware connection, modes and HUNTER level, Fn+P / Fn+R notifications, touchpad / microphone behavior and audio. Color needs both hardware LUT and ICC association.
+After sign-in, confirm the tray and hardware connection; About should report `FRI-HXX / BIOS 1.15`. Smart, High and a display-only HUNTER mode should appear; HUNTER cannot be selected and High requires AC and at least 20% battery. Charging should show the current battery percentage, AC state and thresholds, including the custom preset and master switch. Display & colour should offer eye-care, reading and temperature only; restoring gamma returns the panel to its original state. Network, audio, GPU, fan presets and DTT have been removed from this release and are absent from the UI and package.
 
-Automatic performance, process QoS and OS Turbo are separate switches. A recognized game retains the highest available mode while its process runs. The 45-second grace period starts when recognized processes disappear. Stabilization and minimum switch intervals also apply.
-
-Closing the window keeps the tray active; Exit pauses this session. Disabling a controller restores changes it owns from recovery records. Restore original backup restores saved hardware color and ICC. Vendor software and drivers can be reinstalled from HONOR for the exact model. Avoid two automatic performance controllers at once. Feature gaps and verification limits are in [README](README.en-US.md).
+Closing the window keeps the tray active; Exit pauses this session. Disabling charge or performance control restores changes it owns from recovery records; exiting restores the original Windows gamma ramp. Vendor software and drivers can be reinstalled from HONOR for the exact model. Feature gaps and verification limits are in [README](README.en-US.md).

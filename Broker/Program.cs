@@ -5,8 +5,9 @@ using System.Security.AccessControl;
 using System.Text;
 using System.Text.Json;
 using HonorControl.Shared;
-using HonorControl.Network;
 
+// Privileged helper for the simplified FRI-H56 build. It exposes only firmware
+// status/writes and the Windows gamma-ramp commands over a per-user pipe.
 var allowWrites = args.Contains("--allow-writes");
 var positional = args.Where(argument => argument != "--allow-writes").ToArray();
 bool resident = positional.Length == 1 && positional[0] == "--resident";
@@ -18,21 +19,15 @@ if (resident) { try { if (!singleton.WaitOne(0)) return; } catch (AbandonedMutex
 HonorControl.Diagnostics.DiagnosticLog.Clean(RuntimeIdentity.UserState);
 var backend = Path.Combine(AppContext.BaseDirectory, "Backend");
 string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "unknown";
-var allowed = new HashSet<string>(StringComparer.Ordinal) { "platform-status", "firmware-status", "firmware-mode", "firmware-policy", "firmware-smart", "firmware-performance", "firmware-hunter", "fan-1", "fan-2", "fan-3", "fan-4", "fan-5", "charge-status", "charge-home", "charge-office", "charge-travel", "keyboard-status", "keyboard-icons", "keyboard-fkeys", "keyboard-restore-preference" };
-allowed.UnionWith(["touchpad-status", "mic-light-muted", "mic-light-active"]);
+var allowed = new HashSet<string>(StringComparer.Ordinal)
+{
+    "platform-status", "firmware-status", "firmware-smart", "firmware-performance",
+    "charge-status", "charge-home", "charge-office", "charge-travel", "charge-off",
+    "keyboard-status", "keyboard-icons", "keyboard-fkeys",
+    "display-gamma-status", "display-gamma-apply", "display-gamma-restore"
+};
 using var lifetime = new CancellationTokenSource();
 if (!resident) lifetime.CancelAfter(TimeSpan.FromHours(12));
-var network = new NetworkEngine();
-var audio = new HonorControl.AudioController();
-var gpu = new HonorControl.GpuController(command => RunAsync(Path.Combine(backend, "HonorStandalone.exe"), [command]));
-var performance = new HonorControl.PerformanceController(command => RunAsync(Path.Combine(backend, "HonorStandalone.exe"), [command]));
-var dtt = new HonorControl.DttController(command => RunAsync(Path.Combine(backend, "HonorStandalone.exe"), [command]));
-var boost = new HonorControl.GpuBoostController(command => RunAsync(Path.Combine(backend, "HonorStandalone.exe"), [command]));
-if (resident) _ = network.RunAsync(lifetime.Token);
-if (resident) _ = gpu.RunAsync(lifetime.Token);
-if (resident) _ = performance.RunAsync(lifetime.Token);
-if (resident) _ = dtt.RunAsync(lifetime.Token);
-if (resident) _ = boost.RunAsync(lifetime.Token);
 if (resident) _ = WatchUiAsync(lifetime.Token);
 var userSid = WindowsIdentity.GetCurrent().User ?? throw new InvalidOperationException("No user identity.");
 var security = new PipeSecurity(); security.SetAccessRuleProtection(true, false); security.SetOwner(userSid);
@@ -54,10 +49,11 @@ catch (Exception ex) { Log(ex); if (resident) Environment.ExitCode = 1; }
 
 static bool IsWrite(ControlRequest request)
 {
-    if (request.Action is "audio-apply" or "network-configure" or "wifi-connect" or "gpu-configure" or "gpu-force-integrated" or "performance-configure" or "install-profiles") return true;
-    if (request.Action != "firmware" || request.Command is null) return false;
-    return request.Command is not ("firmware-status" or "firmware-mode" or "firmware-policy" or "charge-status" or "keyboard-status" or "touchpad-status" or "platform-status");
+    if (request.Action != "firmware" || request.Command is null) return true;
+    return request.Command is not ("firmware-status" or "charge-status" or "keyboard-status" or "platform-status" or "display-gamma-status");
 }
+static bool PerformanceOwnerRunning() =>
+    Process.GetProcessesByName("HnPerformanceCenter").Length > 0 || Process.GetProcessesByName("HnPerfPowerNexus").Length > 0;
 
 async Task HandleAsync(NamedPipeServerStream pipe)
 {
@@ -77,24 +73,11 @@ async Task HandleAsync(NamedPipeServerStream pipe)
                 if (!allowWrites && IsWrite(request)) throw new InvalidOperationException("写入操作未启用：Broker 未以 --allow-writes 启动。");
                 if (request.Action == "exit") { await writer.WriteLineAsync(Wire.Encode(new ControlResponse(true))); break; }
                 if (request.Action == "hello") response = new(true, JsonSerializer.SerializeToElement(new { Administrator = true, Resident = resident, Version = version }));
-                else if (request.Action == "install-profiles") response = new(true, await RunAsync(Path.Combine(backend, "HonorStandalone.exe"), ["install-profiles"]));
-                else if (request.Action == "network-status") response = new(true, JsonSerializer.SerializeToElement(network.Snapshot));
-                else if (request.Action == "audio-status") response = new(true, JsonSerializer.SerializeToElement(await Task.Run(audio.Read)));
-                else if (request.Action == "audio-apply" && request.Command is not null) response = new(true, JsonSerializer.SerializeToElement(await Task.Run(() => audio.Apply(request.Command))));
-                else if (request.Action == "gpu-status") response = new(true, JsonSerializer.SerializeToElement(await gpu.ReadAsync()));
-                else if (request.Action == "gpu-configure" && request.Command is not null) response = new(true, JsonSerializer.SerializeToElement(await gpu.ConfigureAsync(request.Command)));
-                else if (request.Action == "gpu-force-integrated") response = new(true, JsonSerializer.SerializeToElement(await gpu.ForceIntegratedAsync()));
-                else if (request.Action == "performance-status") response = new(true, JsonSerializer.SerializeToElement(performance.Snapshot));
-                else if (request.Action == "dtt-status") response = new(true, JsonSerializer.SerializeToElement(dtt.Snapshot));
-                else if (request.Action == "boost-status") response = new(true, JsonSerializer.SerializeToElement(boost.Snapshot));
-                else if (request.Action == "performance-configure" && request.Command is "on" or "off") response = new(true, JsonSerializer.SerializeToElement(await performance.ConfigureAsync(request.Command == "on")));
-                else if (request.Action == "network-configure" && request.Network is not null) response = new(true, JsonSerializer.SerializeToElement(await network.ConfigureAsync(request.Network)));
-                else if (request.Action == "wifi-scan") { await Task.Run(() => WifiNative.Read(true)); await Task.Delay(2000); response = new(true, JsonSerializer.SerializeToElement(await Task.Run(() => WifiNative.Read()))); }
-                else if (request.Action == "wifi-connect" && request.Command is not null && request.InterfaceId is not null) { await WifiNative.ConnectAsync(request.InterfaceId, request.Command); response = new(true, JsonSerializer.SerializeToElement(WifiNative.Read())); }
-                else if (request.Action == "firmware" && request.Command is { } command && allowed.Contains(command))
+                else if (request.Action == "firmware" && request.Command is { } command && (allowed.Contains(command) || command.StartsWith("charge-custom:", StringComparison.Ordinal)))
                 {
-                    response = new(true, command is "firmware-smart" or "firmware-performance" or "firmware-hunter" ?
-                        await performance.ApplyManualAsync(command) : await RunAsync(Path.Combine(backend, "HonorStandalone.exe"), [command]));
+                    if (command is "firmware-smart" or "firmware-performance" && PerformanceOwnerRunning())
+                        throw new InvalidOperationException("荣耀电脑管家正在管理性能模式，请先退出电脑管家后重试。");
+                    response = new(true, await RunAsync(Path.Combine(backend, "HonorStandalone.exe"), [command]));
                 }
                 else throw new InvalidOperationException("不支持的控制操作。");
             }

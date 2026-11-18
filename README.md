@@ -2,57 +2,40 @@
 
 [English](README.en-US.md) · [下载](https://github.com/wzk112/HonorControl/releases) · [安装与迁移](INSTALL.zh-CN.md) · [更新记录](CHANGELOG.md)
 
-面向 HONOR MagicBook Pro 16 **DRA-XX / BIOS 1.13** 的独立 WinUI 3 设备控制工具。无需运行荣耀电脑管家。支持简体中文和 English。
+面向 **荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）** 的独立 WinUI 3 设备控制工具。无需运行荣耀电脑管家。支持简体中文和 English。
 
 **源码公开，仅限非商业个人使用与研究。禁止商用。** 采用 [Honor Control Personal Research License 1.0](LICENSE)，该限制不属于 OSI 定义的开源许可。非荣耀官方产品。
 
-![性能与散热](docs/screenshots/performance.zh-CN.png)
+> 界面截图将在 FRI-H56 实机验证后更新。
 
 ## 功能
 
 | 项目 | 当前支持 |
 | --- | --- |
-| 性能与风扇 | 智能、高能、HUNTER；HUNTER 五档风扇预设；固件读回模式、档位、温度与转速 |
-| 自动性能 | 按运行中的游戏与前台场景选择模式；游戏进程存在时保持，消失后有 45 秒缓冲；手动切换成功后关闭自动控制 |
-| OS Turbo 场景调度 | Windows EPP、DTT PL1 请求、EPO、风扇表与 NVIDIA 频偏；退出或关闭后按恢复记录还原应用修改 |
-| 进程调度 | 指定前台 HighQoS、后台 EcoQoS；自动识别游戏、会议与创作程序；部分游戏核心分配 |
-| 显卡电源 | 双显卡、集显与随供电自动切换；空闲等待与占用保护；强制集显另行确认 |
-| 充电保护 | 家用 40–70%、办公 70–90%、差旅 95–100% |
-| 显示 | 内屏刷新率直接选择；原生、sRGB、P3 硬件 LUT 与 ICC；护眼、电子书、色温及周期亮度 |
-| 音频 | Histen 外放空间音频和立体声预设；耳机空间预设；Fortemedia 单人、多人和环境拾音 |
-| Fn 与浮窗 | Fn+P、Fn+R、F1–F12 默认行为、自定义备用快捷键；功能对应图标；受限切换显示原因 |
-| 网络 | 出站 DSCP 优先级、后台上传限速、已保存 WLAN 选网与断线重连、内置并行下载 |
-| 常驻与界面 | Program Files 安装、登录启动、托盘常驻、后台恢复；教程、更新记录、关于页及系统动画偏好 |
-
-![音频](docs/screenshots/audio.zh-CN.png)
-![English interface](docs/screenshots/about.en-US.png)
+| 充电保护 | 家用 40–70%、办公 70–90%、差旅 95–100%、自定义阈值；总开关开启默认家用，关闭恢复充满停止；读取电池、供电状态与固件回读 |
+| 性能模式 | 智能与高能（Turbo X）模式切换；HUNTER 仅作展示、不可选；`荣耀电脑管家` 正在管理性能时提示先退出 |
+| 显示与色彩 | 通过 Windows 系统伽马表实现护眼、电子书与色温调节，可恢复原始设置；不提供内屏刷新率设置 |
+| 机型识别 | 仅适配 FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M；其他机型首次运行弹窗提示，顶部红色横幅不可关闭，全部功能仅作展示 |
+| 常驻与界面 | Program Files 安装、登录启动、托盘常驻、后台恢复；Fn/F1–F12 优先级设置；教程、更新记录、关于页及系统动画偏好 |
+| 精简范围 | 本版本已移除网络加速、音频、显卡切换、DTT/OS Turbo、自动性能、进程调度与风扇预设；HUNTER 仅展示 |
 
 ## 安装
 
-在 [Releases](https://github.com/wzk112/HonorControl/releases) 下载 `HonorControl-0.14.5-Setup-x64.exe`，双击并授权一次 UAC。安装器完成文件复制、开始菜单和登录启动注册，无需手动运行 PowerShell。
+在 [Releases](https://github.com/wzk112/HonorControl/releases) 下载 `HonorControl-0.15.0-Setup-x64.exe`，双击并授权一次 UAC。安装器完成文件复制、开始菜单和登录启动注册，无需手动运行 PowerShell。
 
 安装到 `C:\Program Files\HonorControl`，注册 `HonorControl.Agent` 和 `HonorControl.UI` 两项登录任务。从开始菜单打开，首次前台打开显示使用说明。关闭窗口后托盘继续运行，右键托盘退出可暂停当前登录会话。升级保留个人设置。
 
-安装器可从 DRA-XX 的 Windows 色彩目录导入本机原厂 ICC 和 LUT。自动导入要求检测到已验证的 TMA2024 内屏及与本机序列号匹配的完整文件。缺少文件或更换过内屏时，使用 `Import-Calibration.ps1` 导入对应物理面板的备份。公共包不包含原厂 DLL、驱动或校准数据。详见[安装指南](INSTALL.zh-CN.md)。
+本机型的荣耀电脑管家安装包未提供 FRI/H 系列的原厂 ICC、LUT 和色彩管理配置，因此安装器不会导入工厂色彩数据；显示功能改用 Windows 系统伽马表。公共包不包含原厂 DLL、驱动或校准数据。详见[安装指南](INSTALL.zh-CN.md)。
 
-荣耀电脑管家、独立 OSD、HUNTERCAMP、Magic 视界及 YOYO 等软件后台可卸载。**保留 Intel / NVIDIA / Realtek / Fortemedia / Histen / ACPI 等硬件驱动、音频服务和校准目录。** 清理脚本默认只列计划，显式传入 `-Apply` 才执行，报告写入本机。
-
-## 游戏识别
-
-通过进程文件名匹配，包含 476 条游戏类别进程规则。同一游戏可能对应多条，规则数不代表独立游戏数。自动游戏会话额外排除启动器和常见辅助进程。
-
-例如 CS2、英雄联盟、PUBG、穿越火线、原神、星铁、绝区零、黑神话、赛博朋克 2077、GTA V、荒野大镖客 2、艾尔登法环、只狼、博德之门 3、守望先锋、无畏契约和 Apex。规则命中不等同于逐款实测。完整规则见 [DarwinAScenes.tsv](App/Assets/DarwinAScenes.tsv)。受版本、地区和启动方式影响，文件名不同可能无法识别。
+荣耀电脑管家、独立 OSD、HUNTERCAMP、Magic 视界及 YOYO 等软件后台可卸载。**保留 AMD Radeon 显卡驱动、ACPI/WMI 设备 `ACPI\PNP0C14\HWMI`、HID 与芯片组驱动；不要删除 DriverStore 或 PnP 设备。** 清理脚本默认只列计划，显式传入 `-Apply` 才执行，报告写入本机。
 
 ## 支持与限制
 
-- 固件写入限定 DRA-XX / BIOS 1.13。已验证配置为 Core Ultra 5 125H / RTX 4060，其他 CPU、BIOS 和机型未获验证。
-- 同型号不同配置按功能区分。DTT 场景写入限 125H；NVIDIA 频偏限 RTX 4060 Laptop GPU；部分游戏核心规则含 125H、155H。固件模式等通用入口按型号与 BIOS 检查，不能据此保证其他配置完整兼容。其他型号即使同为 125H / 4060 也不在适配范围。
-- 高能需要插电且电量至少 20%；HUNTER 需要圆口电源或至少 135 W PD；第 4、5 档需要支持的 200 W 电源。固件保留最终控制权。
-- 自动性能、进程调度及 OS Turbo 默认关闭，升级保留设置。HUNTER 使用固件功耗与所选风扇预设，场景 EPP 在该模式暂停属于预期行为。
-- 尚未实现原厂核显 2200 MHz 锁频、后台进程 1% / 10% CPU 硬配额及游戏配置文件修改。Intel 接口报告本机核显频率不可控，未绕过驱动声明强写。不能声称完全复刻所有原厂性能策略。
-- 28 条插电 DTT 策略、两组 NVIDIA 频偏与恢复、三档麦克风 RPC 读回已在本机验证。电池策略未逐条拔电验证；耳机听感、多链路叠加和延迟收益未完成实测。
-- 色彩适配当前内屏 SDR。HDR、自动色彩管理、独显直连和外接多屏未全面验证。音效依赖相应驱动与端点支持。
-- DSCP 是否被采纳取决于路由器与网络。WLAN 信息访问受 Windows 隐私权限限制。手机协同和浏览器下载接管不在当前范围。
+- 固件写入仅面向 FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M。其他 CPU、BIOS 或机型一律只读，并显示检测到的实际配置。
+- 充电保护写入和性能模式写入使用选定 WMI 命令；0.15.0 安装包的 Broker 已启用 `--allow-writes`，但只执行能力位允许的控制，固件保留最终控制权。
+- 高能模式需要插电且电量至少 20%。荣耀电脑管家正在管理性能模式时，Honor Control 会提示先退出电脑管家，避免两套后端争抢。
+- 显示与色彩仅使用 Windows 系统伽马表，提供护眼、电子书与色温；本机型没有原厂硬件 LUT、ICC 或色彩管理配置，因此不提供原生/sRGB/P3 硬件切换。
+- 网络加速、音频、显卡切换、DTT/OS Turbo、自动性能、进程调度与风扇预设已从本版本移除，不再加载对应模块；HUNTER 仅展示不可选。
 
 ## 构建与数据
 
@@ -62,7 +45,7 @@ Windows x64、.NET 8 SDK，以及 Windows 桌面编译所需组件。
 .\Build.ps1 -OutputDirectory .\artifacts\HonorControl -WithoutCalibration
 ```
 
-`App` 为 WinUI 3 界面，`Broker` 提供限定命令范围的高权限控制与后台策略，`Shared` 包含协议与场景分类，`BackendSource` 通过系统和已安装驱动接口操作设备。输出包含 .NET 和 Windows App SDK 运行库。需要本机色彩数据时，在新的输出目录构建并指定 `-CalibrationDirectory`，或向解压包的 Backend 目录导入。
+`App` 为 WinUI 3 界面，`Broker` 提供限定命令范围的高权限控制与后台保活，`Shared` 包含协议、能力档案与运行身份，`BackendSource` 通过系统和已安装驱动接口操作设备。输出包含 .NET 和 Windows App SDK 运行库。本机型没有工厂色彩校准数据，显示使用系统伽马表。
 
 日志、偏好与恢复记录位于 `%LOCALAPPDATA%\HonorControl`。应用不自动上传日志，也不自动检查更新。选择文档链接时会打开浏览器，网络功能按用户操作访问网络。仓库不包含个人设置、SID、注册表备份、恢复备份或 OEM 二进制。
 
@@ -74,6 +57,6 @@ Windows x64、.NET 8 SDK，以及 Windows 桌面编译所需组件。
 .\Build-Installer.ps1 -PackageDirectory .\artifacts\HonorControl
 ```
 
-在 Windows「已安装的应用」选择 Honor Control 可卸载。卸载保留个人设置、日志、校准和硬件驱动。
+在 Windows「已安装的应用」选择 Honor Control 可卸载。卸载保留个人设置、日志和硬件驱动。
 
 运行日志单文件上限 2 MiB，每类最多 3 份；超过 14 天未更新的日志会清理。此规则不删除恢复记录、偏好或校准备份。

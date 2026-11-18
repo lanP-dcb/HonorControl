@@ -32,6 +32,7 @@ internal sealed class TrayIcon : IDisposable
     [DllImport("user32.dll")] private static extern bool SetForegroundWindow(nint hwnd);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern uint RegisterWindowMessageW(string message);
     private readonly uint _taskbarCreated = RegisterWindowMessageW("TaskbarCreated");
+    internal bool CanMode { get; set; } = true;
     public TrayIcon(nint hwnd, Action<string> action)
     {
         _hwnd = hwnd; _action = action; _callback = WindowProc;
@@ -40,7 +41,7 @@ internal sealed class TrayIcon : IDisposable
         Add();
     }
     private void Add() { var data = Data(); Shell_NotifyIconW(0, ref data); }
-    private NotifyData Data() => new() { Size = (uint)Marshal.SizeOf<NotifyData>(), Hwnd = _hwnd, Id = 1, Flags = 1 | 2 | 4, Callback = Message, Icon = _icon, Tip = L.T("Honor Control · 性能与色彩常驻"), Info = "", InfoTitle = "" };
+    private NotifyData Data() => new() { Size = (uint)Marshal.SizeOf<NotifyData>(), Hwnd = _hwnd, Id = 1, Flags = 1 | 2 | 4, Callback = Message, Icon = _icon, Tip = L.T("Honor Control · 性能与充电常驻"), Info = "", InfoTitle = "" };
     private nint WindowProc(nint hwnd, uint msg, nuint wparam, nint lparam, nuint id, nuint data)
     {
         if (msg == _taskbarCreated) Add();
@@ -59,13 +60,14 @@ internal sealed class TrayIcon : IDisposable
         try
         {
             AppendMenuW(menu, 0, 1, L.T("打开 Honor Control")); AppendMenuW(menu, 0x800, 0, null);
-            AppendMenuW(menu, 0, 10, L.T("智能模式")); AppendMenuW(menu, 0, 11, L.T("高能模式")); AppendMenuW(menu, 0, 13, L.T("HUNTER 模式"));
-            AppendMenuW(menu, 0, 14, L.T("循环内屏刷新率"));
-            AppendMenuW(menu, 0x800, 0, null); AppendMenuW(menu, 0, 20, L.T("原生色彩")); AppendMenuW(menu, 0, 21, L.T("sRGB 色彩")); AppendMenuW(menu, 0, 22, L.T("P3 色彩"));
+            if (CanMode)
+            {
+                AppendMenuW(menu, 0, 10, L.T("智能模式")); AppendMenuW(menu, 0, 11, L.T("高能模式"));
+            }
             AppendMenuW(menu, 0x800, 0, null); AppendMenuW(menu, 0, 99, L.T("退出（本次会话停止常驻）"));
             GetCursorPos(out var point); SetForegroundWindow(_hwnd);
             uint choice = TrackPopupMenu(menu, 0x100 | 0x2, point.X, point.Y, 0, _hwnd, 0);
-            string? command = choice switch { 1 => "show", 10 => "firmware-smart", 11 => "firmware-performance", 13 => "firmware-hunter", 14 => "cycle-refresh", 20 => "native", 21 => "srgb", 22 => "p3", 99 => "quit", _ => null };
+            string? command = choice switch { 1 => "show", 10 => "firmware-smart", 11 => "firmware-performance", 99 => "quit", _ => null };
             if (command is not null) _action(command);
         }
         finally { DestroyMenu(menu); }

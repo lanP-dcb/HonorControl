@@ -1,75 +1,104 @@
 using System;
 using System.Linq;
 using System.Management;
+using HonorControl.Shared;
 
-// Detected platform and the feature set verified for it. Reads only; no firmware access.
-internal sealed class PlatformProfile {
-    public string Name="Unsupported";
-    public string Display="";
-    public string Detail="";
-    public string Model="";
-    public string Bios="";
-    public string Cpu="";
-    public string Gpu="";
+// Resolves the machine identity once and exposes only the capabilities that the
+// simplified FRI-H56 build actually uses.
+internal sealed class PlatformProfile
+{
+    public string Name = "Unsupported";
+    public string Display = "Unknown model";
+    public string Detail = "";
+    public string Model = "";
+    public string Version = "";
+    public string Bios = "";
+    public string Cpu = "";
+    public string Gpu = "";
     public bool FirmwareWrites;
-    public bool Hunter;
-    public bool FanPreset;
-    public bool DiscreteGpu;
-    public bool BarrelJack;
-    public bool Dtt;
-    public bool SecondFan;
     public bool ModeWrite;
     public bool ChargeWrite;
+    public bool DisplayGamma;
     public bool FnWrite;
-    public bool MicLight;
-    public bool ColorLut;
-    public bool Audio;
-    public string WriteBlockReason="";
+    public string WriteBlockReason = "";
 
-    static PlatformProfile current;
-    public static PlatformProfile Current { get { if(current==null)current=Detect();return current; } }
+    private static PlatformProfile current;
+    public static PlatformProfile Current { get { return current ?? (current = Detect()); } }
 
-    static string Read(string query,string property) {
-        using(var search=new ManagementObjectSearcher(query))using(var all=search.Get())
-            return all.Cast<ManagementObject>().Select(x=>Convert.ToString(x[property])).FirstOrDefault(v=>!String.IsNullOrEmpty(v))??"";
+    private static string Read(string query, string property)
+    {
+        using (var searcher = new ManagementObjectSearcher(query))
+        using (var results = searcher.Get())
+        {
+            foreach (ManagementObject item in results)
+            {
+                string value = Convert.ToString(item[property]);
+                if (!String.IsNullOrWhiteSpace(value)) return value.Trim();
+            }
+        }
+        return "";
     }
 
-    public static PlatformProfile Detect() {
-        var profile=new PlatformProfile();
-        try {
-            profile.Model=Read("SELECT Model FROM Win32_ComputerSystem","Model");
-            profile.Bios=Read("SELECT SMBIOSBIOSVersion FROM Win32_BIOS","SMBIOSBIOSVersion");
-            profile.Cpu=Read("SELECT Name FROM Win32_Processor","Name");
-            profile.Gpu=String.Join(" | ",new ManagementObjectSearcher("SELECT Name FROM Win32_VideoController").Get().Cast<ManagementObject>().Select(x=>Convert.ToString(x["Name"])).Where(v=>!String.IsNullOrEmpty(v)).ToArray());
-        } catch(Exception ex) {
-            profile.Name="Unsupported";profile.WriteBlockReason="Platform detection failed: "+ex.Message;return profile;
-        }
-        if(profile.Model=="DRA-XX"&&profile.Bios=="1.13"&&profile.Cpu.Contains("125H")&&profile.Gpu.Contains("RTX 4060")) {
-            profile.Name="DRA-XX";profile.FirmwareWrites=true;
-            profile.Display="HONOR MagicBook Pro 16";profile.Detail="Core Ultra 5 125H / GeForce RTX 4060";
-            profile.ModeWrite=true;profile.ChargeWrite=true;profile.FnWrite=true;profile.MicLight=true;profile.ColorLut=true;profile.Audio=true;
-            profile.Hunter=true;profile.FanPreset=true;profile.DiscreteGpu=true;profile.BarrelJack=true;profile.Dtt=true;profile.SecondFan=true;
-            return profile;
-        }
-        if(profile.Model=="FRI-HXX"&&profile.Bios=="1.15"&&profile.Cpu.Contains("7640HS")&&profile.Gpu.Contains("Radeon 760M")) {
-            profile.Name="FRI-HXX";profile.FirmwareWrites=true;
-            profile.Display="HONOR MagicBook X14 2024";profile.Detail="Ryzen 5 7640HS / Radeon 760M";
-            // Reads are verified on this platform; every write stays closed until each one is proven.
-            profile.ModeWrite=false;profile.ChargeWrite=false;profile.FnWrite=false;profile.MicLight=false;profile.ColorLut=false;profile.Audio=false;
-            profile.Hunter=false;profile.FanPreset=false;profile.DiscreteGpu=false;profile.BarrelJack=false;profile.Dtt=false;profile.SecondFan=false;
-            return profile;
-        }
-        profile.Name="Unsupported";
-        profile.Display=profile.Model;profile.Detail=profile.Cpu;
-        profile.WriteBlockReason="Writes are limited to verified platforms. Detected "+profile.Model+" / BIOS "+(profile.Bios.Length==0?"unknown":profile.Bios)+" / "+profile.Cpu+" / "+profile.Gpu+".";
-        return profile;
+    public static PlatformProfile Detect()
+    {
+        string model = Read("SELECT Model FROM Win32_ComputerSystem", "Model");
+        string version = Read("SELECT Version FROM Win32_ComputerSystemProduct", "Version");
+        string bios = Read("SELECT SMBIOSBIOSVersion FROM Win32_BIOS", "SMBIOSBIOSVersion");
+        string cpu = Read("SELECT Name FROM Win32_Processor", "Name");
+        string gpu = string.Join(" | ", new ManagementObjectSearcher("SELECT Name FROM Win32_VideoController")
+            .Get().Cast<ManagementObject>().Select(x => Convert.ToString(x["Name"])).Where(x => !String.IsNullOrWhiteSpace(x)));
+        return ForIdentity(model, version, bios, cpu, gpu);
     }
 
-    public void AssertWrites() {
-        if(!FirmwareWrites)throw new InvalidOperationException(WriteBlockReason.Length>0?WriteBlockReason:"Writes are limited to verified platforms.");
+    public static PlatformProfile ForIdentity(string model, string version, string bios, string cpu, string gpu)
+    {
+        var caps = PlatformCapabilities.ForIdentity(model, version, bios, cpu, gpu);
+        return new PlatformProfile
+        {
+            Name = caps.Name,
+            Display = caps.Display,
+            Detail = caps.Detail,
+            Model = model,
+            Version = version,
+            Bios = bios,
+            Cpu = cpu,
+            Gpu = gpu,
+            FirmwareWrites = caps.FirmwareWrites,
+            ModeWrite = caps.ModeWrite,
+            ChargeWrite = caps.ChargeWrite,
+            DisplayGamma = caps.DisplayGamma,
+            FnWrite = caps.FnWrite,
+            WriteBlockReason = caps.WriteBlockReason
+        };
     }
 
-    public object Snapshot() {
-        return new {Profile=Name,Display=Display,Detail=Detail,Model=Model,Bios=Bios,Cpu=Cpu,Gpu=Gpu,FirmwareWrites=FirmwareWrites,Hunter=Hunter,FanPreset=FanPreset,DiscreteGpu=DiscreteGpu,BarrelJack=BarrelJack,Dtt=Dtt,SecondFan=SecondFan,ModeWrite=ModeWrite,ChargeWrite=ChargeWrite,FnWrite=FnWrite,MicLight=MicLight,ColorLut=ColorLut,Audio=Audio};
+    public void AssertWrites()
+    {
+        if (!FirmwareWrites)
+            throw new NotSupportedException(String.IsNullOrWhiteSpace(WriteBlockReason)
+                ? "Firmware writes are not enabled for this machine."
+                : WriteBlockReason);
+    }
+
+    public object Snapshot()
+    {
+        return new
+        {
+            Profile = Name,
+            Display,
+            Detail,
+            Model,
+            Version,
+            Bios,
+            Cpu,
+            Gpu,
+            FirmwareWrites,
+            ModeWrite,
+            ChargeWrite,
+            DisplayGamma,
+            FnWrite,
+            Supported = Name == "FRI-HXX",
+            WriteBlockReason
+        };
     }
 }
