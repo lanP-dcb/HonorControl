@@ -21,7 +21,7 @@
 
 ## 安装
 
-在 [Releases](https://github.com/wzk112/HonorControl/releases) 下载 `HonorControl-0.15.4-Setup-x64.exe`，双击并授权一次 UAC。安装器完成文件复制、开始菜单和登录启动注册，无需手动运行 PowerShell；安装完成后不会自动启动，可在结束页勾选“运行 Honor Control”后点击“确定”启动。
+在 [Releases](https://github.com/wzk112/HonorControl/releases) 下载 `HonorControl-1.0.0-Setup-x64.exe`，双击并授权一次 UAC。安装器完成文件复制、开始菜单和登录启动注册，无需手动运行 PowerShell；安装完成后不会自动启动，可在结束页勾选“运行 Honor Control”后点击“确定”启动。
 
 本版本不再随安装包携带 .NET 8 运行时。安装器会先检查 **.NET 8 Desktop Runtime（x64）**；如果缺失，会提示并打开微软官方下载页，安装运行时后重新运行安装器即可。
 
@@ -34,7 +34,7 @@
 ## 支持与限制
 
 - 固件写入仅面向荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56；机型代号 FRI-HXX；支持 BIOS 1.15）。其他 CPU、BIOS 或机型一律只读，并显示检测到的实际配置。
-- 充电保护写入和性能模式写入使用选定 WMI 命令；0.15.4 安装包的 Broker 已启用 `--allow-writes`，但只执行能力位允许的控制，固件保留最终控制权。
+- 充电保护写入和性能模式写入使用选定 WMI 命令；1.0.0 安装包的 Broker 已启用 `--allow-writes`，但只执行能力位允许的控制，固件保留最终控制权。
 - 高能模式需要插电且电量至少 20%。荣耀电脑管家正在管理性能模式时，Honor Control 会提示先退出电脑管家，避免两套后端争抢。
 - 显示与色彩仅使用 Windows 系统伽马表，提供护眼、电子书、色温与亮度节律；本机型没有原厂硬件 LUT、ICC 或色彩管理配置，因此不提供原生/sRGB/P3 硬件切换。
 - 网络加速、音频、显卡切换、DTT/OS Turbo、自动性能、进程调度、风扇状态读取与风扇预设已从本版本移除，不再加载对应模块；HUNTER 仅展示不可选。

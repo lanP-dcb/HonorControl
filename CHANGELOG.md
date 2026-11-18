@@ -1,5 +1,18 @@
 # Changelog / 更新记录
 
+## 1.0.0
+
+首个正式版 / First stable release.
+
+- 支持荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56）：充电保护、平衡/高能性能模式、Fn F1–F12、Windows 伽马显示与亮度节律。
+- 安装包改为框架依赖发布，需 .NET 8 Desktop Runtime（x64）；安装器缺失时会提示并打开官方下载页。
+- 修复重新安装后首次打开时管理员 Broker 未启动导致的硬件控制超时。
+- 移除未使用的网络加速、音频、GPU、DTT、风扇预设等模块，安装目录约 95 MB。
+- Adds support for the HONOR X14 Ryzen Edition 2024 R5-7640HS (FRI-H56): charge protection, Balanced/Performance modes, Fn F1–F12, Windows gamma display and brightness rhythm.
+- Framework-dependent packaging with a .NET 8 Desktop Runtime (x64) check and download prompt.
+- Fixes the privileged broker timeout when enabling hardware control after a reinstall.
+- Removes unused network, audio, GPU, DTT and fan-preset modules; installed payload is about 95 MB.
+
 ## 0.15.4
 
 - 修复卸载后重新安装并手动启动时，管理员控制会话未启动导致“启用硬件控制”超时的问题；现在会自动启动常驻控制进程并重试连接。
