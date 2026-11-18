@@ -33,8 +33,8 @@ namespace HonorControl.Shared
                 return new PlatformCapabilities
                 {
                     Name = "FRI-HXX",
-                    Display = "HONOR MagicBook X14 2024",
-                    Detail = "Ryzen 5 7640HS / Radeon 760M",
+                    Display = "荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56）",
+                    Detail = "机型代号 FRI-HXX · Ryzen 5 7640HS / Radeon 760M",
                     FirmwareWrites = true,
                     ModeWrite = true,
                     ChargeWrite = true,

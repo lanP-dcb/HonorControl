@@ -1,5 +1,16 @@
 # Changelog / 更新记录
 
+## 0.15.2
+
+- 修复开机自启时窗口短暂闪现后进入后台的问题。
+- 修复充电保护“自定义”模式在输入完成前被固件定时刷新跳回预设的问题。
+- 性能模式“智能”更名为“平衡”，当前性能模式标题补充 OS Turbo 说明。
+- 关于与支持范围明确标注荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56）、机型代号 FRI-HXX 与支持 BIOS 1.15。
+- Prevents the startup window from briefly flashing before it goes to the background.
+- Keeps the custom charge preset while it is being edited instead of snapping back to the firmware preset.
+- Renames the Smart performance mode to Balanced and adds the OS Turbo label to the current-mode card.
+- States the supported model explicitly as HONOR X14 Ryzen Edition 2024 R5-7640HS (FRI-H56), model code FRI-HXX, supported BIOS 1.15.
+
 ## 0.15.1
 
 - 显示页恢复“亮度节律（系统伽马）”，并移除“夜间模式 / 亮度与显示 / 高级显示设置”三个系统设置跳转按钮。

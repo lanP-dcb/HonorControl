@@ -37,7 +37,7 @@
     <value>Enable hardware control</value>
   </data>
   <data name="Text009.Text" xml:space="preserve">
-    <value>Current performance mode</value>
+    <value>Current performance mode · OS Turbo</value>
   </data>
   <data name="Text010.Text" xml:space="preserve">
     <value>Waiting for connection</value>
@@ -61,7 +61,7 @@
     <value>Performance mode</value>
   </data>
   <data name="Text017.Text" xml:space="preserve">
-    <value>Smart</value>
+    <value>Balanced</value>
   </data>
   <data name="Text018.Text" xml:space="preserve">
     <value>✓ Selected</value>
@@ -559,7 +559,7 @@
     <value>Fn and F1–F12</value>
   </data>
   <data name="Text169.Text" xml:space="preserve">
-    <value>Fn+P changes the firmware Smart / Performance mode and shows the actual mode.</value>
+    <value>Fn+P changes the firmware Balanced / Performance mode and shows the actual mode.</value>
   </data>
   <data name="Text170.Header" xml:space="preserve">
     <value>Default F1–F12 behavior</value>

@@ -37,7 +37,7 @@
     <value>启用硬件控制</value>
   </data>
   <data name="Text009.Text" xml:space="preserve">
-    <value>当前性能模式</value>
+    <value>当前性能模式 · OS Turbo</value>
   </data>
   <data name="Text010.Text" xml:space="preserve">
     <value>等待连接</value>
@@ -61,7 +61,7 @@
     <value>性能模式</value>
   </data>
   <data name="Text017.Text" xml:space="preserve">
-    <value>智能</value>
+    <value>平衡</value>
   </data>
   <data name="Text018.Text" xml:space="preserve">
     <value>✓ 已选择</value>
@@ -559,7 +559,7 @@
     <value>Fn 与 F1–F12</value>
   </data>
   <data name="Text169.Text" xml:space="preserve">
-    <value>Fn+P：固件切换智能／高能，显示实际模式。</value>
+    <value>Fn+P：固件切换平衡／高能，显示实际模式。</value>
   </data>
   <data name="Text170.Header" xml:space="preserve">
     <value>F1–F12 默认行为</value>

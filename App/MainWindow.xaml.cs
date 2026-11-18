@@ -149,7 +149,7 @@ public sealed partial class MainWindow : Window
         ConnectLabel.Text = _backend.IsConnected ? L.T("硬件控制已启用") : L.T("启用硬件控制");
         ConnectButton.IsEnabled = !_backend.IsConnected && !_busy && _platformSupported;
     }
-    private static string ModeName(int mode) => mode switch { 0 => L.T("智能"), 1 => L.T("高能"), 3 => "HUNTER", _ => L.T("等待连接") };
+    private static string ModeName(int mode) => mode switch { 0 => L.T("平衡"), 1 => L.T("高能"), 3 => "HUNTER", _ => L.T("等待连接") };
     private void UpdateMode(int mode)
     {
         _mode = mode;
@@ -202,9 +202,10 @@ public sealed partial class MainWindow : Window
     {
         await RunAsync(async () => { _modeRevision++; UpdateFirmware(await _backend.HardwareAsync(command)); }, L.T("切换成功"));
     }
-    private async void ReadCharge_Click(object sender, RoutedEventArgs e) => await RunAsync(async () => UpdateCharge(await _backend.HardwareAsync("charge-status")), null);
+    private async void ReadCharge_Click(object sender, RoutedEventArgs e) { _chargeCustomEditing = false; await RunAsync(async () => UpdateCharge(await _backend.HardwareAsync("charge-status")), null); }
     private async void Charge_Click(object sender, RoutedEventArgs e)
     {
+        _chargeCustomEditing = false;
         string command = (string)((ToggleButton)sender).Tag;
         await RunAsync(async () =>
         {

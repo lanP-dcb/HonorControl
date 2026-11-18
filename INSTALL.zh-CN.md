@@ -1,10 +1,10 @@
 # 安装与迁移
 
-Honor Control 0.15.1 适配 Windows x64 的荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）。安装包的 Broker 已启用写入，但只执行本机型能力位允许的充电保护与智能/高能控制。完整安装目录约占用数百 MB，需保留整个解压目录。
+Honor Control 0.15.2 适配 Windows x64 的荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56；机型代号 FRI-HXX；支持 BIOS 1.15）。安装包的 Broker 已启用写入，但只执行本机型能力位允许的充电保护与平衡/高能控制。完整安装目录约占用数百 MB，需保留整个解压目录。
 
 ## 安装与升级
 
-1. 从 Releases 下载 HonorControl-0.15.1-Setup-x64.exe，双击并授权一次 UAC。
+1. 从 Releases 下载 HonorControl-0.15.2-Setup-x64.exe，双击并授权一次 UAC。
 2. 点击安装，等待完成。安装到 C:\Program Files\HonorControl，注册当前用户的托盘和设备控制登录任务。
 3. 安装完成页可按需勾选“运行 Honor Control”，再点击“确定”启动；不勾选则安装器结束后不会自动运行。之后也可从开始菜单打开。首次前台打开显示教程及官方组件迁移清单，登录后台启动不会打断用户。
 4. 在关于页切换简体中文 / English，点击重新打开应用语言。升级重复运行新版安装器，保留偏好和日志。
@@ -20,13 +20,13 @@ Honor Control 0.15.1 适配 Windows x64 的荣耀笔记本 X14 锐龙版 2024（
 
 原厂管家的性能、色彩和 OSD 后台可能与 Honor Control 同时修改设备设置。迁移时先安装并验证 Honor Control，再通过「设置 → 应用 → 已安装的应用」或「控制面板 → 程序和功能」卸载荣耀电脑管家。需要清除原厂提示时，检查发布者为荣耀的 OSD 组件。HUNTERCAMP、Magic 视界、YOYO 助理等按所需功能处理。 [微软卸载说明](https://support.microsoft.com/en-gb/windows/uninstall-or-remove-apps-and-programs-in-windows-4b55f974-2cc6-2d2b-d092-5905080eaf98) · [荣耀卸载说明](https://www.honor.com/cn/support/content/zh-cn15813919/)
 
-卸载荣耀电脑管家后，Honor Control 不依赖 `PCManager.exe`、`MBAMainService`、`HnPerformanceCenter`、`HnPerfPowerNexus`、`HnLcdEnhancement`、`SmartChargePlugin` 或 ICC/LUT 文件；充电保护和智能/高能走本机 ACPI/WMI 固件接口，显示 gamma 走 Windows 接口。
+卸载荣耀电脑管家后，Honor Control 不依赖 `PCManager.exe`、`MBAMainService`、`HnPerformanceCenter`、`HnPerfPowerNexus`、`HnLcdEnhancement`、`SmartChargePlugin` 或 ICC/LUT 文件；充电保护和平衡/高能走本机 ACPI/WMI 固件接口，显示 gamma 走 Windows 接口。
 
 需要保留以下底层组件。
 
 | 功能 | 依赖 |
 | --- | --- |
-| 充电保护、智能/高能 | 本机 ACPI/WMI 设备 `ACPI\PNP0C14\HWMI`（Windows `wmiacpi`）与 BIOS/UEFI 固件 |
+| 充电保护、平衡/高能 | 本机 ACPI/WMI 设备 `ACPI\PNP0C14\HWMI`（Windows `wmiacpi`）与 BIOS/UEFI 固件 |
 | Fn / F1–F12 优先级 | 本机 ACPI/WMI 设备 `ACPI\PNP0C14\HWMI` |
 | 护眼、电子书、色温 | Windows 系统伽马表；不需要 `HnLcdEnhancement`、ICC 或硬件 LUT |
 | 音频、风扇预设、GPU 切换、DTT | 已从本版本移除，不加载对应模块 |
@@ -35,10 +35,10 @@ Honor Control 0.15.1 适配 Windows x64 的荣耀笔记本 X14 锐龙版 2024（
 
 建议卸载顺序：
 
-1. 安装并验证 Honor Control（充电阈值、智能/高能、Fn、gamma）。
+1. 安装并验证 Honor Control（充电阈值、平衡/高能、Fn、gamma）。
 2. 从托盘退出荣耀电脑管家性能后台；确认 `HnPerformanceCenter` 与 `HnPerfPowerNexus` 已结束。`MBAProcessWatcher` 可能重新拉起它们；必要时先停止 `MBAMainService`。
 3. 通过 Windows「已安装的应用」卸载荣耀电脑管家，重启。
-4. 在设备管理器确认 `ACPI\PNP0C14\HWMI` 仍为正常；运行 `platform-status`、`charge-status`，再测试一次充电写入、智能/高能切换和 gamma 恢复。
+4. 在设备管理器确认 `ACPI\PNP0C14\HWMI` 仍为正常；运行 `platform-status`、`charge-status`，再测试一次充电写入、平衡/高能切换和 gamma 恢复。
 5. 确认无误后，可用随包脚本清理软件残留；默认只输出计划，管理员运行并明确传入 `-Apply` 才执行。
 
 ```powershell
@@ -51,7 +51,7 @@ Honor Control 0.15.1 适配 Windows x64 的荣耀笔记本 X14 锐龙版 2024（
 ## 验证
 
 - 重新登录后确认托盘与硬件控制已连接；关于页显示 `FRI-HXX / BIOS 1.15`。
-- 读取当前性能模式，应出现智能与高能；HUNTER 仅展示且不可选。
+- 读取当前性能模式，应出现平衡与高能；HUNTER 仅展示且不可选。
 - 读取充电阈值，显示当前电池百分比与接电状态；测试家用、办公、差旅、自定义以及总开关。
 - 显示与色彩页只应提供护眼、电子书与色温；调整 gamma 后点恢复应回到原始状态。
 - 网络、音频、GPU、风扇预设与 DTT 已从本版本移除，不再出现在界面或安装包中。

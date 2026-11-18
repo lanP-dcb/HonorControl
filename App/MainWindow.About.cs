@@ -7,7 +7,7 @@ namespace HonorControl;
 
 public sealed partial class MainWindow
 {
-    internal const string Version = "0.15.1";
+    internal const string Version = "0.15.2";
     private bool _guideOpen;
     private static string WelcomeRecord => Path.Combine(AppPaths.UserState, "welcome-version.txt");
     private static string UnsupportedRecord => Path.Combine(AppPaths.UserState, "unsupported-version.txt");
@@ -35,19 +35,19 @@ public sealed partial class MainWindow
             {
                 (L.T("1 · 安装与启动"), L.T("双击安装程序，授权一次 UAC。安装到 Program Files，登录后托盘常驻。升级保留偏好和显示伽马备份。")),
                 (L.T("2 · 充电保护"), L.T("家用、办公、差旅分别写入 40–70%、70–90%、95–100% 的起止阈值；自定义模式可设置开始 20–99%、停止 21–100%，且开始值必须小于停止值。总开关开启时默认家用，关闭时恢复 0–100% 充满停止。达到停止阈值后不会强制放电，插电时电量可自然下降。")),
-                (L.T("3 · 性能模式"), L.T("提供智能和高能两档；高能要求插电且电量至少 20%。HUNTER 仅作展示、本机不可选。切换后显示固件回读值。")),
+                (L.T("3 · 性能模式"), L.T("提供平衡和高能两档；高能要求插电且电量至少 20%。HUNTER 仅作展示、本机不可选。切换后显示固件回读值。")),
                 (L.T("4 · 显示与色彩"), L.T("「显示与色彩」只调整 Windows 系统伽马表，可选护眼、阅读和色温；不写入 ICC 或硬件 LUT，点恢复或退出应用即可还原。")),
                 (L.T("5 · Fn 设置"), L.T("可在设置页切换键帽图标功能优先或标准 F1–F12 优先，写入后会从固件读回确认。")),
                 (L.T("6 · 记录"), L.T("日志保存在 LocalAppData\\HonorControl，关于页可重看本说明。"))
             }));
             tabs.Items.Add(GuideTab(L.T("更新记录"), new[]
             {
-                (Version, L.T("适配荣耀笔记本 X14 锐龙版 2024（FRI-HXX / M1030 / BIOS 1.15 / 7640HS / Radeon 760M）：充电保护、智能/高能模式、Fn 与 F1–F12、Windows 伽马显示；移除未使用的网络、音频、GPU、风扇状态与预设及 DTT 组件。"))
+                (Version, L.T("适配荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56；机型代号 FRI-HXX；支持 BIOS 1.15）：充电保护、平衡/高能模式、Fn 与 F1–F12、Windows 伽马显示；移除未使用的网络、音频、GPU、风扇状态与预设及 DTT 组件。"))
             }));
             tabs.Items.Add(GuideTab(L.T("支持与须知"), new[]
             {
-                (L.T("已验证设备"), L.T("实机验证为 FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M。其他 FRI 配置按功能判断，未承诺整机完整兼容。")),
-                (L.T("功能范围"), L.T("充电保护、智能/高能模式、Fn 与 F1–F12 默认行为、Windows 伽马显示。HUNTER 仅展示。")),
+                (L.T("已验证设备"), L.T("实机验证为荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56；机型代号 FRI-HXX；支持 BIOS 1.15）。其他 FRI 配置按功能判断，未承诺整机完整兼容。")),
+                (L.T("功能范围"), L.T("充电保护、平衡/高能模式、Fn 与 F1–F12 默认行为、Windows 伽马显示。HUNTER 仅展示。")),
                 (L.T("已知限制"), L.T("性能模式写入需先退出荣耀电脑管家；色彩不提供 ICC/LUT；HDR、外接屏与多屏未验证。")),
                 (L.T("许可与记录"), L.T("源码仅供非商业个人研究使用。设备操作与恢复记录保存在本机，不上传日志。关于页可查看源码、许可、安装指南和更新记录。"))
             }));
@@ -89,7 +89,7 @@ public sealed partial class MainWindow
                 {
                     TextWrapping = TextWrapping.Wrap,
                     Text = L.T("当前设备不在 Honor Control 的适配范围内。软件可以打开，但所有功能仅作展示，不会读取或写入设备。") + Environment.NewLine + Environment.NewLine +
-                        L.T("支持的机型：HONOR MagicBook X14 2024（FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）。")
+                        L.T("支持的机型：荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56；机型代号 FRI-HXX；支持 BIOS 1.15）。")
                 },
                 CloseButtonText = L.T("我知道了"),
                 DefaultButton = ContentDialogButton.Close

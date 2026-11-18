@@ -62,7 +62,7 @@ internal sealed class TrayIcon : IDisposable
             AppendMenuW(menu, 0, 1, L.T("打开 Honor Control")); AppendMenuW(menu, 0x800, 0, null);
             if (CanMode)
             {
-                AppendMenuW(menu, 0, 10, L.T("智能模式")); AppendMenuW(menu, 0, 11, L.T("高能模式"));
+                AppendMenuW(menu, 0, 10, L.T("平衡模式")); AppendMenuW(menu, 0, 11, L.T("高能模式"));
             }
             AppendMenuW(menu, 0x800, 0, null); AppendMenuW(menu, 0, 99, L.T("退出（本次会话停止常驻）"));
             GetCursorPos(out var point); SetForegroundWindow(_hwnd);

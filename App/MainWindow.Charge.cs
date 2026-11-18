@@ -8,11 +8,13 @@ public sealed partial class MainWindow
 {
     private int _chargeStart = 40, _chargeStop = 70;
     private bool _chargeSyncing;
+    private bool _chargeCustomEditing;
 
     private void UpdateChargeSelection(int start, int stop)
     {
         _chargeStart = start;
         _chargeStop = stop;
+        if (_chargeCustomEditing) return;
         _chargeSyncing = true;
         try
         {
@@ -36,13 +38,15 @@ public sealed partial class MainWindow
     private async void ChargeProtection_Toggled(object sender, RoutedEventArgs e)
     {
         if (!_ready || _chargeSyncing || !_capChargeWrite) return;
+        _chargeCustomEditing = false;
         bool on = ChargeProtectionToggle.IsOn;
         await ApplyChargeAsync(on ? 40 : 0, on ? 70 : 100, on ? L.T("充电保护已启用，默认使用家用 40–70%。") : L.T("充电保护已关闭，恢复为 0–100%，充满后停止。"));
     }
 
     private void ChargeCustom_Selected(object sender, RoutedEventArgs e)
     {
-        if (!_capChargeWrite) return;
+        if (_chargeSyncing || !_capChargeWrite) return;
+        _chargeCustomEditing = true;
         _chargeSyncing = true;
         try
         {
@@ -73,6 +77,7 @@ public sealed partial class MainWindow
             return;
         }
         ChargeCustomHint.Text = L.T("正在写入自定义阈值…");
+        _chargeCustomEditing = false;
         await ApplyChargeAsync(start, stop, L.F($"自定义充电阈值已写入：{start}% 开始 / {stop}% 停止。"));
     }
 
