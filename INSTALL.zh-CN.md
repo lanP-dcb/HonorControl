@@ -1,10 +1,10 @@
 # 安装与迁移
 
-Honor Control 0.15.0 适配 Windows x64 的荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）。安装包的 Broker 已启用写入，但只执行本机型能力位允许的充电保护与智能/高能控制。完整安装目录约占用数百 MB，需保留整个解压目录。
+Honor Control 0.15.1 适配 Windows x64 的荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）。安装包的 Broker 已启用写入，但只执行本机型能力位允许的充电保护与智能/高能控制。完整安装目录约占用数百 MB，需保留整个解压目录。
 
 ## 安装与升级
 
-1. 从 Releases 下载 HonorControl-0.15.0-Setup-x64.exe，双击并授权一次 UAC。
+1. 从 Releases 下载 HonorControl-0.15.1-Setup-x64.exe，双击并授权一次 UAC。
 2. 点击安装，等待完成。安装到 C:\Program Files\HonorControl，注册当前用户的托盘和设备控制登录任务。
 3. 安装完成页可按需勾选“运行 Honor Control”，再点击“确定”启动；不勾选则安装器结束后不会自动运行。之后也可从开始菜单打开。首次前台打开显示教程及官方组件迁移清单，登录后台启动不会打断用户。
 4. 在关于页切换简体中文 / English，点击重新打开应用语言。升级重复运行新版安装器，保留偏好和日志。

@@ -19,7 +19,7 @@ Independent WinUI 3 device controls for the **HONOR MagicBook X14 2024 (FRI-H56 
 
 ## Install
 
-Download `HonorControl-0.15.0-Setup-x64.exe` from [Releases](https://github.com/wzk112/HonorControl/releases), double-click it and approve UAC once. The installer handles files, the Start menu and sign-in tasks. No manual PowerShell step is required. Setup does not launch the app automatically; tick "Run Honor Control" on the finish page and click OK to start it.
+Download `HonorControl-0.15.1-Setup-x64.exe` from [Releases](https://github.com/wzk112/HonorControl/releases), double-click it and approve UAC once. The installer handles files, the Start menu and sign-in tasks. No manual PowerShell step is required. Setup does not launch the app automatically; tick "Run Honor Control" on the finish page and click OK to start it.
 
 The target is `C:\Program Files\HonorControl` with two sign-in tasks, `HonorControl.Agent` and `HonorControl.UI`. Start from the Start menu. Closing the window keeps the tray active. Exiting from the tray pauses until next sign-in or manual launch. Upgrades preserve preferences.
 
@@ -29,7 +29,7 @@ Uninstall HONOR PC Manager, separate OSD, HUNTERCAMP, Magic Animation and YOYO s
 
 ## Compatibility and limitations
 
-The verified device is FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M. The 0.15.0 installer enables Broker `--allow-writes`, but only capability-approved charge and performance writes pass; firmware retains final control. Performance mode needs AC and at least 20% battery. HONOR PC Manager must not be actively managing performance mode at the same time.
+The verified device is FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M. The 0.15.1 installer enables Broker `--allow-writes`, but only capability-approved charge and performance writes pass; firmware retains final control. Performance mode needs AC and at least 20% battery. HONOR PC Manager must not be actively managing performance mode at the same time.
 
 Other CPU, BIOS or model combinations get a first-run notice, a non-closable red banner and display-only controls. Display and colour use the Windows system gamma ramp only: this model has no factory hardware LUT, ICC or colour-management data, so Native/sRGB/P3 hardware switching is not offered. Network acceleration, audio, GPU switching, DTT/OS Turbo, automatic performance, process scheduling, fan-status reading and fan presets have been removed from this release; HUNTER is display-only.
 
