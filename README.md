@@ -6,7 +6,15 @@
 
 **源码公开，仅限非商业个人使用与研究。禁止商用。** 采用 [Honor Control Personal Research License 1.0](LICENSE)，该限制不属于 OSI 定义的开源许可。非荣耀官方产品。
 
-> 界面截图将在 FRI-H56 实机验证后更新。
+## 界面
+
+| 性能与充电 | 显示与色彩 |
+| --- | --- |
+| ![性能与充电](docs/screenshots/performance.zh-CN.png) | ![显示与色彩](docs/screenshots/display.zh-CN.png) |
+
+| 设置与记录 | 关于 |
+| --- | --- |
+| ![设置与记录](docs/screenshots/settings.zh-CN.png) | ![关于](docs/screenshots/about.zh-CN.png) |
 
 ## 功能
 
