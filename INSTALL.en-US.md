@@ -1,6 +1,6 @@
 # Installation and migration
 
-Honor Control 0.15.3 targets Windows x64 on the HONOR X14 Ryzen Edition 2024 R5-7640HS (FRI-H56; model code FRI-HXX; supported BIOS 1.15). The installer enables Broker writes, but only capability-approved charge and Balanced/Performance controls are executed. Install under your usual signed-in administrator account, rather than entering another account's credentials.
+Honor Control 0.15.4 targets Windows x64 on the HONOR X14 Ryzen Edition 2024 R5-7640HS (FRI-H56; model code FRI-HXX; supported BIOS 1.15). The installer enables Broker writes, but only capability-approved charge and Balanced/Performance controls are executed. Install under your usual signed-in administrator account, rather than entering another account's credentials.
 
 This version is framework-dependent and requires the **.NET 8 Desktop Runtime (x64)**. The installation directory is about 95 MB.
 
@@ -12,7 +12,7 @@ This model has no factory calibration data to import and does not use ICC/LUT im
 
 ## Install or upgrade
 
-Download HonorControl-0.15.3-Setup-x64.exe from Releases. Double-click, approve UAC and choose Install. Setup checks for the .NET 8 Desktop Runtime (x64) first; if it is missing, setup prompts and opens Microsoft's official download page, and installation stops. The setup handles Program Files, Start menu and the HonorControl.UI / HonorControl.Agent sign-in tasks. There is no manual PowerShell step. The finish page offers an optional "Run Honor Control" checkbox; setup does not launch the app unless it is ticked when you click OK. Use your usual signed-in administrator account.
+Download HonorControl-0.15.4-Setup-x64.exe from Releases. Double-click, approve UAC and choose Install. Setup checks for the .NET 8 Desktop Runtime (x64) first; if it is missing, setup prompts and opens Microsoft's official download page, and installation stops. The setup handles Program Files, Start menu and the HonorControl.UI / HonorControl.Agent sign-in tasks. There is no manual PowerShell step. The finish page offers an optional "Run Honor Control" checkbox; setup does not launch the app unless it is ticked when you click OK. Use your usual signed-in administrator account.
 
 Open from Start. The tutorial includes usage steps and OEM migration notes. Change Chinese / English in About and restart the UI. Upgrades preserve preferences and logs. Uninstall through Windows Installed apps. Personal data, logs and drivers are retained. Developers can still use Install.ps1 for extracted build output.
 

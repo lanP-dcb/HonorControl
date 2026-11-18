@@ -1,5 +1,10 @@
 # Changelog / 更新记录
 
+## 0.15.4
+
+- 修复卸载后重新安装并手动启动时，管理员控制会话未启动导致“启用硬件控制”超时的问题；现在会自动启动常驻控制进程并重试连接。
+- Fixes the reinstall-and-launch timeout when enabling hardware control because the resident privileged broker was not running; the app now starts it automatically and retries the connection.
+
 ## 0.15.3
 
 - 改为框架依赖发布，安装包不再携带 .NET 8 运行时；安装目录由约 236 MB 降至约 95 MB。

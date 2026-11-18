@@ -14,13 +14,13 @@ using Microsoft.Win32;
 
 [assembly: AssemblyTitle("Honor Control Setup")]
 [assembly: AssemblyProduct("Honor Control")]
-[assembly: AssemblyVersion("0.15.3.0")]
-[assembly: AssemblyFileVersion("0.15.3.0")]
+[assembly: AssemblyVersion("0.15.4.0")]
+[assembly: AssemblyFileVersion("0.15.4.0")]
 [assembly: AssemblyCopyright("Copyright 2026 wzk112")]
 
 internal static class SetupProgram
 {
-    internal const string Version = "0.15.3";
+    internal const string Version = "0.15.4";
 #if UNINSTALL
     internal static readonly bool Uninstall = true;
 #else

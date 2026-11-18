@@ -101,7 +101,7 @@
 
             <StackPanel x:Name="AboutPage" Spacing="22" Visibility="Collapsed">
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="12">
-                <TextBlock x:Name="AboutVersion" Text="Honor Control 0.15.3" FontSize="28" FontWeight="SemiBold"/>
+                <TextBlock x:Name="AboutVersion" Text="Honor Control 0.15.4" FontSize="28" FontWeight="SemiBold"/>
                 <TextBlock Text="FRI-H56 设备控制工具 · WinUI 3 · Windows x64" Style="{StaticResource CaptionLabel}"/>
                 <TextBlock Text="充电保护、平衡／高能性能模式、Fn 行模式与 Windows 系统伽马显示。无需运行荣耀电脑管家。" TextWrapping="Wrap"/>
                 <StackPanel Orientation="Horizontal" Spacing="10"><Button x:Uid="Text200" Content="GitHub 源码" Click="Repository_Click"/><Button x:Uid="Text201" Content="许可协议" Click="License_Click"/></StackPanel>

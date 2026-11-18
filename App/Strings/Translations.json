@@ -163,6 +163,7 @@
   "预览 · 性能模式": "Preview · Performance mode",
   "无法启动管理员控制会话。": "Cannot start the privileged control session.",
   "管理员会话尚未连接。": "The privileged session is not connected.",
+  "无法连接管理员控制会话，请重新打开 Honor Control 后重试。": "Cannot connect to the privileged control session. Reopen Honor Control and try again.",
   "管理员控制会话已结束，请重新启用硬件控制。": "The privileged session ended. Enable hardware control again.",
   "控制操作未完成。": "The operation did not complete.",
   "不支持的色彩操作。": "Unsupported color operation.",

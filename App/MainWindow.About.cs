@@ -7,7 +7,7 @@ namespace HonorControl;
 
 public sealed partial class MainWindow
 {
-    internal const string Version = "0.15.3";
+    internal const string Version = "0.15.4";
     private bool _guideOpen;
     private static string WelcomeRecord => Path.Combine(AppPaths.UserState, "welcome-version.txt");
     private static string UnsupportedRecord => Path.Combine(AppPaths.UserState, "unsupported-version.txt");
