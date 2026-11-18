@@ -81,7 +81,7 @@ internal sealed class BackendClient : IAsyncDisposable
 
     public async Task<JsonElement> DisplayGammaAsync(string command, params string[] arguments)
     {
-        var allowed = new[] { "display-gamma-status", "display-gamma-apply", "display-gamma-restore" };
+        var allowed = new[] { "display-gamma-status", "display-gamma-apply", "display-gamma-restore", "display-gamma-rhythm-start", "display-gamma-rhythm-stop", "display-gamma-rhythm-tick" };
         if (!allowed.Contains(command)) throw new ArgumentException(L.T("不支持的显示调节操作。"));
         await _displayLock.WaitAsync();
         try { return await RunStandaloneAsync(command, arguments); }

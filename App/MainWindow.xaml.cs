@@ -17,8 +17,10 @@ public sealed partial class MainWindow : Window
     private readonly BackendClient _backend = new();
     private readonly ObservableCollection<string> _activity = [];
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(5) };
+    private readonly DispatcherTimer _noticeTimer = new() { Interval = TimeSpan.FromSeconds(5) };
     private bool _ready, _busy, _active = true, _closing, _quitRequested;
-    private bool _syncingFn;
+    private bool _syncingFn, _syncingDisplay;
+    private bool _rhythmDesired;
     private TrayIcon? _tray;
     private int _mode = -1;
     private int _modeRevision;
@@ -36,6 +38,7 @@ public sealed partial class MainWindow : Window
         AppWindow.Resize(new SizeInt32(1220, 860));
         if (AppWindow.Presenter is OverlappedPresenter presenter) presenter.IsMaximizable = true;
         ActivityList.ItemsSource = _activity;
+        _noticeTimer.Tick += (_, _) => { _noticeTimer.Stop(); Notice.IsOpen = false; };
         _tray = new TrayIcon(WinRT.Interop.WindowNative.GetWindowHandle(this), TrayAction);
         AppWindow.Closing += (_, args) => { if (!_quitRequested) { args.Cancel = true; AppWindow.Hide(); } };
         Root.Loaded += async (_, _) =>
@@ -64,6 +67,7 @@ public sealed partial class MainWindow : Window
                         UpdateCharge(await _backend.HardwareAsync("charge-status"));
                         UpdateKeyboardMode(await _backend.HardwareAsync("keyboard-status"));
                         await RefreshDisplayAsync();
+                        await LoadRhythmPreferenceAsync();
                     }
                 }, null);
                 Log(L.T("应用已启动。"));
@@ -75,7 +79,13 @@ public sealed partial class MainWindow : Window
         Activated += (_, e) => { _active = e.WindowActivationState != WindowActivationState.Deactivated; };
         _timer.Tick += async (_, _) =>
         {
-            if (!_ready || _busy || _closing || !_active || !_platformSupported || !_backend.IsConnected) return;
+            if (!_ready || _busy || _closing || !_platformSupported) return;
+            if (_rhythmDesired && _capDisplayGamma)
+            {
+                try { await _backend.DisplayGammaAsync("display-gamma-rhythm-tick"); }
+                catch (Exception ex) { Log(Friendly(ex)); }
+            }
+            if (!_active || !_backend.IsConnected) return;
             try
             {
                 UpdateFirmware(await _backend.HardwareAsync("firmware-status"));
@@ -116,6 +126,7 @@ public sealed partial class MainWindow : Window
     private void Show(string message, InfoBarSeverity severity)
     {
         Notice.Message = L.T(message); Notice.Severity = severity; Notice.IsOpen = true;
+        _noticeTimer.Stop(); _noticeTimer.Start();
     }
     private void Log(string message)
     {
@@ -213,11 +224,47 @@ public sealed partial class MainWindow : Window
         var status = await _backend.DisplayGammaAsync("display-gamma-status");
         string effect = status.Text("EffectStyle", "off");
         bool active = status.ValueKind == JsonValueKind.Object && status.TryGetProperty("Active", out var value) && value.ValueKind == JsonValueKind.True;
-        DisplayModeSummary.Text = active ? L.T("当前显示 · 系统伽马调节已启用") : L.T("当前显示 · 系统原色");
+        bool rhythm = status.ValueKind == JsonValueKind.Object && status.TryGetProperty("RhythmActive", out var rhythmValue) && rhythmValue.ValueKind == JsonValueKind.True;
+        DisplayModeSummary.Text = rhythm ? L.T("当前显示 · 亮度节律已启用") : active ? L.T("当前显示 · 系统伽马调节已启用") : L.T("当前显示 · 系统原色");
         DisplayEffectPicker.SelectedIndex = effect == "eye" ? 1 : effect == "reading" ? 2 : 0;
         TemperatureSlider.Value = status.Number("Temperature", 0);
         DisplayEffectStatus.Text = !active ? L.T("显示效果已关闭") : L.T("系统伽马表已读回");
         DisplayVerificationText.Text = active ? L.T("Windows 系统伽马表已应用，可随时恢复原色。") : L.T("当前使用 Windows 原始伽马表。");
+        _syncingDisplay = true;
+        try { BrightnessRhythmToggle.IsOn = rhythm; }
+        finally { _syncingDisplay = false; }
+        _rhythmDesired = rhythm;
+        RhythmStatusText.Text = rhythm ? L.T("亮度节律运行中") : L.T("亮度节律未启用");
+    }
+    private static string RhythmPreference => Path.Combine(AppPaths.UserState, "brightness-rhythm-enabled.txt");
+    private async Task LoadRhythmPreferenceAsync()
+    {
+        if (!_capDisplayGamma) return;
+        _rhythmDesired = File.Exists(RhythmPreference) && File.ReadAllText(RhythmPreference).Trim() == "1";
+        if (!_rhythmDesired) return;
+        try
+        {
+            await _backend.DisplayGammaAsync("display-gamma-rhythm-start");
+            await RefreshDisplayAsync();
+        }
+        catch (Exception ex)
+        {
+            _rhythmDesired = false;
+            Log(Friendly(ex));
+        }
+    }
+    private async void BrightnessRhythm_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (!_ready || _syncingDisplay || _busy) return;
+        bool enabled = BrightnessRhythmToggle.IsOn;
+        await RunAsync(async () =>
+        {
+            await _backend.DisplayGammaAsync(enabled ? "display-gamma-rhythm-start" : "display-gamma-rhythm-stop");
+            _rhythmDesired = enabled;
+            Directory.CreateDirectory(AppPaths.UserState);
+            File.WriteAllText(RhythmPreference, enabled ? "1" : "0");
+            await RefreshDisplayAsync();
+        }, enabled ? L.T("亮度节律已启用。") : L.T("亮度节律已关闭。"));
     }
     private async void ApplyDisplayEffect_Click(object sender, RoutedEventArgs e)
     {
@@ -225,7 +272,16 @@ public sealed partial class MainWindow : Window
         string value = ((int)TemperatureSlider.Value).ToString(System.Globalization.CultureInfo.InvariantCulture);
         await RunAsync(async () => { await _backend.DisplayGammaAsync("display-gamma-apply", effect, value); await RefreshDisplayAsync(); }, L.T("显示效果已应用并读回。"));
     }
-    private async void RestoreDisplay_Click(object sender, RoutedEventArgs e) => await RunAsync(async () => { await _backend.DisplayGammaAsync("display-gamma-restore"); await RefreshDisplayAsync(); }, L.T("已恢复 Windows 原始伽马表。"));
+    private async void RestoreDisplay_Click(object sender, RoutedEventArgs e)
+    {
+        if (_rhythmDesired)
+        {
+            _rhythmDesired = false;
+            Directory.CreateDirectory(AppPaths.UserState);
+            File.WriteAllText(RhythmPreference, "0");
+        }
+        await RunAsync(async () => { await _backend.DisplayGammaAsync("display-gamma-restore"); await RefreshDisplayAsync(); }, L.T("已恢复 Windows 原始伽马表。"));
+    }
     private async void RefreshDisplay_Click(object sender, RoutedEventArgs e) => await RunAsync(RefreshDisplayAsync, L.T("已重新读取显示状态。"));
 
     private void UpdateKeyboardMode(JsonElement status)
@@ -287,12 +343,6 @@ public sealed partial class MainWindow : Window
     private void OpenLogs_Click(object sender, RoutedEventArgs e)
     {
         Directory.CreateDirectory(AppPaths.UserState); Process.Start(new ProcessStartInfo(AppPaths.UserState) { UseShellExecute = true });
-    }
-    private void OpenDisplaySettings_Click(object sender, RoutedEventArgs e)
-    {
-        string uri = (string)((Button)sender).Tag;
-        if (uri is "ms-settings:nightlight" or "ms-settings:display" or "ms-settings:display-advanced")
-            Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true });
     }
     public void ShowMainWindow()
     {

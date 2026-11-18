@@ -298,10 +298,10 @@
     <value>Apply display effects</value>
   </data>
   <data name="Text085.Text" xml:space="preserve">
-    <value>Cyclic brightness</value>
+    <value>Brightness rhythm (system gamma)</value>
   </data>
   <data name="Text086.Text" xml:space="preserve">
-    <value>At 53–93% internal display brightness, a 60-second cycle adds up to 5 percentage points. Pauses below 60% battery or in battery saver.</value>
+    <value>Adds a slow one-minute brightness wave to the Windows gamma ramp, about 4% deep, layered with eye comfort, reading and color temperature. Turning it off restores the current effect immediately.</value>
   </data>
   <data name="Text087.OnContent" xml:space="preserve">
     <value>On</value>

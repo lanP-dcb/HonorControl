@@ -653,5 +653,10 @@
   "该功能在当前机型尚未启用。": "This function is not enabled on this model.",
   "荣耀电脑管家性能服务仍在运行，请先退出电脑管家后重试。": "HONOR PC Manager performance service is still running. Exit PC Manager and try again.",
   "读取固件需要管理员权限，请点击“启用硬件控制”。": "Reading firmware requires administrator access. Click Enable hardware control.",
-  "已取消管理员授权。": "Administrator authorization was canceled."
+  "已取消管理员授权。": "Administrator authorization was canceled.",
+  "当前显示 · 亮度节律已启用": "Display · brightness rhythm on",
+  "亮度节律运行中": "Brightness rhythm is running",
+  "亮度节律未启用": "Brightness rhythm is off",
+  "亮度节律已启用。": "Brightness rhythm enabled.",
+  "亮度节律已关闭。": "Brightness rhythm disabled."
 }

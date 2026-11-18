@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -11,6 +12,8 @@ internal static class DisplayGamma
     private const int RampEntries = 256;
     private const int RampLength = RampEntries * 3;
     private const int GammaRampSize = RampLength * 2;
+    private const double RhythmPeriodSeconds = 60;
+    private const double RhythmAmplitude = 0.04;
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     private struct DisplayDevice
@@ -60,6 +63,24 @@ internal static class DisplayGamma
     }
     private static string SettingsPath { get { return Path.Combine(State, "display-gamma.txt"); } }
     private static string BackupPath { get { return Path.Combine(State, "display-gamma-backup.txt"); } }
+    private static string RhythmPath { get { return Path.Combine(State, "display-gamma-rhythm.txt"); } }
+
+    private static bool RhythmActive { get { return File.Exists(RhythmPath); } }
+
+    private static double RhythmBrightness()
+    {
+        if (!RhythmActive) return 1.0;
+        long ticks;
+        if (!long.TryParse(File.ReadAllText(RhythmPath).Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out ticks)) return 1.0;
+        double seconds;
+        try { seconds = (DateTime.UtcNow - new DateTime(ticks, DateTimeKind.Utc)).TotalSeconds; }
+        catch (ArgumentOutOfRangeException) { return 1.0; }
+        if (seconds < 0) seconds = 0;
+        double time = seconds % RhythmPeriodSeconds;
+        double phase = time < 30 ? 0 : time < 40 ? (time - 30) / 10 : (60 - time) / 20;
+        double rise = (1 - Math.Cos(phase * Math.PI)) / 2;
+        return 1 + RhythmAmplitude * rise;
+    }
 
     private static IntPtr DeviceContext(out int displayCount)
     {
@@ -100,15 +121,15 @@ internal static class DisplayGamma
         return ramp;
     }
 
-    private static ushort[] Build(DisplayEffects effects)
+    private static ushort[] Build(DisplayEffects effects, double brightness)
     {
         double[] factors = effects.GammaFactors(DateTime.Now.Hour);
         var ramp = new ushort[RampLength];
         for (int i = 0; i < RampEntries; i++)
         {
-            int red = (int)Math.Round(i * 257 * factors[0]);
-            int green = (int)Math.Round(i * 257 * factors[1]);
-            int blue = (int)Math.Round(i * 257 * factors[2]);
+            int red = (int)Math.Round(i * 257 * factors[0] * brightness);
+            int green = (int)Math.Round(i * 257 * factors[1] * brightness);
+            int blue = (int)Math.Round(i * 257 * factors[2] * brightness);
             ramp[i] = (ushort)Math.Min(65535, Math.Max(0, red));
             ramp[RampEntries + i] = (ushort)Math.Min(65535, Math.Max(0, green));
             ramp[2 * RampEntries + i] = (ushort)Math.Min(65535, Math.Max(0, blue));
@@ -152,6 +173,9 @@ internal static class DisplayGamma
     {
         if (command == "display-gamma-status") return Status();
         if (command == "display-gamma-restore") return Restore();
+        if (command == "display-gamma-rhythm-start") return RhythmStart();
+        if (command == "display-gamma-rhythm-stop") return RhythmStop();
+        if (command == "display-gamma-rhythm-tick") return RhythmTick();
         if (command == "display-gamma-apply")
         {
             int temperature;
@@ -159,6 +183,22 @@ internal static class DisplayGamma
             return Apply(args[1], temperature);
         }
         throw new ArgumentException("Unknown display gamma command.");
+    }
+
+    private static object Result(int count, DisplayEffects effects, bool verified)
+    {
+        return new
+        {
+            Backend = "Windows GDI gamma ramp",
+            DisplayCount = count,
+            Active = effects.Active || RhythmActive,
+            EffectStyle = effects.Style,
+            Temperature = effects.Temperature,
+            RhythmActive = RhythmActive,
+            RhythmBrightness = Math.Round(RhythmBrightness(), 3),
+            EffectsVerified = verified,
+            SamplesPerChannel = RampEntries
+        };
     }
 
     private static object Status()
@@ -170,16 +210,19 @@ internal static class DisplayGamma
         {
             var current = new ushort[RampLength];
             bool readable = GetDeviceGammaRamp(deviceContext, current);
-            bool active = effects.Active;
-            bool verified = readable && Same(current, Build(effects));
-            return new { Backend = "Windows GDI gamma ramp", DisplayCount = count, Active = active, EffectStyle = effects.Style, Temperature = effects.Temperature, EffectsVerified = verified, SamplesPerChannel = RampEntries };
+            bool verified = readable && Same(current, Build(effects, RhythmBrightness()));
+            return Result(count, effects, verified);
         }
         finally { Close(deviceContext); }
     }
 
     private static object Apply(string style, int temperature)
     {
-        var effects = new DisplayEffects(style, temperature);
+        return ApplyEffects(new DisplayEffects(style, temperature), true);
+    }
+
+    private static object ApplyEffects(DisplayEffects effects, bool saveSettings)
+    {
         int count;
         IntPtr deviceContext = DeviceContext(out count);
         try
@@ -187,15 +230,37 @@ internal static class DisplayGamma
             var before = new ushort[RampLength];
             if (!GetDeviceGammaRamp(deviceContext, before)) throw new InvalidOperationException("无法读取当前显示伽马表。");
             if (!File.Exists(BackupPath)) SaveBackup(before);
-            var wanted = Build(effects);
+            var wanted = Build(effects, RhythmBrightness());
             if (!SetDeviceGammaRamp(deviceContext, wanted)) throw new InvalidOperationException("系统拒绝了显示伽马调整。");
             var after = new ushort[RampLength];
             if (!GetDeviceGammaRamp(deviceContext, after) || !Same(after, wanted)) throw new InvalidOperationException("显示伽马调整未能读回。");
-            Directory.CreateDirectory(State);
-            File.WriteAllText(SettingsPath, effects.Style + " " + effects.Temperature.ToString());
-            return new { Backend = "Windows GDI gamma ramp", DisplayCount = count, Active = effects.Active, EffectStyle = effects.Style, Temperature = effects.Temperature, EffectsVerified = true, SamplesPerChannel = RampEntries };
+            if (saveSettings)
+            {
+                Directory.CreateDirectory(State);
+                File.WriteAllText(SettingsPath, effects.Style + " " + effects.Temperature.ToString(CultureInfo.InvariantCulture));
+            }
+            return Result(count, effects, true);
         }
         finally { Close(deviceContext); }
+    }
+
+    private static object RhythmStart()
+    {
+        Directory.CreateDirectory(State);
+        if (!RhythmActive) File.WriteAllText(RhythmPath, DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture));
+        return ApplyEffects(ReadEffects(), false);
+    }
+
+    private static object RhythmStop()
+    {
+        try { File.Delete(RhythmPath); } catch (FileNotFoundException) { }
+        DisplayEffects effects = ReadEffects();
+        return effects.Active ? ApplyEffects(effects, false) : Restore();
+    }
+
+    private static object RhythmTick()
+    {
+        return RhythmActive ? ApplyEffects(ReadEffects(), false) : Status();
     }
 
     private static object Restore()
@@ -207,9 +272,10 @@ internal static class DisplayGamma
             ushort[] saved = ReadBackup();
             ushort[] ramp = saved == null ? Identity() : saved;
             if (!SetDeviceGammaRamp(deviceContext, ramp)) throw new InvalidOperationException("无法恢复原始显示伽马表。");
+            try { File.Delete(RhythmPath); } catch (FileNotFoundException) { }
             try { File.Delete(SettingsPath); } catch (FileNotFoundException) { }
             try { File.Delete(BackupPath); } catch (FileNotFoundException) { }
-            return new { Backend = "Windows GDI gamma ramp", DisplayCount = count, Active = false, EffectStyle = "off", Temperature = 0, EffectsVerified = true, SamplesPerChannel = RampEntries };
+            return Result(count, new DisplayEffects("off", 0), true);
         }
         finally { Close(deviceContext); }
     }

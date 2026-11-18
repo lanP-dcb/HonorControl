@@ -298,10 +298,10 @@
     <value>应用显示效果</value>
   </data>
   <data name="Text085.Text" xml:space="preserve">
-    <value>类自然光亮度</value>
+    <value>亮度节律（系统伽马）</value>
   </data>
   <data name="Text086.Text" xml:space="preserve">
-    <value>内屏亮度在 53% 至 93% 范围内时，每 60 秒渐变一次，最多增加 5 个百分点。电池低于 60% 或启用节电时暂停。</value>
+    <value>在系统伽马表上叠加约 60 秒一次的缓慢亮度起伏，幅度约 4%，与护眼、电子书和色温叠加。关闭后立即恢复当前效果。</value>
   </data>
   <data name="Text087.OnContent" xml:space="preserve">
     <value>开启</value>
