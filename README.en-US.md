@@ -1,20 +1,30 @@
 # Honor Control
 
-[绠€浣撲腑鏂嘳(README.md) 路 [Downloads](https://github.com/wzk112/HonorControl/releases) 路 [Installation](INSTALL.en-US.md) 路 [Changelog](CHANGELOG.md)
+[简体中文](README.md) · [Downloads](https://github.com/wzk112/HonorControl/releases) · [Installation](INSTALL.en-US.md) · [Changelog](CHANGELOG.md)
 
 Independent WinUI 3 device controls for the **HONOR X14 Ryzen Edition 2024 R5-7640HS (FRI-H56 / model code FRI-HXX / supported BIOS 1.15)**, without running HONOR PC Manager. Chinese and English UI are included.
 
 **Source available for noncommercial personal use and personal research only. Commercial use is prohibited.** See the [Honor Control Personal Research License 1.0](LICENSE). This is not an OSI open-source license. This project is independent of HONOR.
 
-> Screenshots will be updated after validation on the FRI-H56 device.
+## Screenshots
+
+Screenshots show the simplified Chinese UI.
+
+| Performance & charging | Display & colour |
+| --- | --- |
+| ![Performance & charging](docs/screenshots/performance.zh-CN.png) | ![Display & colour](docs/screenshots/display.zh-CN.png) |
+
+| Settings & records | About |
+| --- | --- |
+| ![Settings & records](docs/screenshots/settings.zh-CN.png) | ![About](docs/screenshots/about.zh-CN.png) |
 
 ## Features
 
-- Charging protection presets: home 40鈥?0%, office 70鈥?0%, travel 95鈥?00% and custom; the master switch defaults to Home when on and restores charge-to-full when off; reads battery, AC state and firmware readback.
+- Charging protection presets: home 40–70%, office 70–90%, travel 95–100% and custom; the master switch defaults to Home when on and restores charge-to-full when off; reads battery, AC state and firmware readback.
 - Balanced and Performance (Turbo X) modes; HUNTER is display-only and cannot be selected; warns you to exit HONOR PC Manager while it owns performance control.
 - Eye-care, reading, colour-temperature effects and brightness rhythm through the Windows system gamma ramp, with one-click restore; no refresh-rate control.
 - Device identification limited to the HONOR X14 Ryzen Edition 2024 R5-7640HS (FRI-H56; model code FRI-HXX; supported BIOS 1.15). Other models get a first-run notice, a non-closable red banner and display-only controls.
-- Program Files installation, sign-in startup, tray operation, background recovery, Fn / F1鈥揊12 priority setting, tutorial, changelog and About page.
+- Program Files installation, sign-in startup, tray operation, background recovery, Fn / F1–F12 priority setting, tutorial, changelog and About page.
 - Removed in this release: network acceleration, audio, GPU switching, DTT/OS Turbo, automatic performance, process scheduling, fan-status reading and fan presets; HUNTER is display-only.
 
 ## Install
@@ -35,7 +45,7 @@ The verified device is the HONOR X14 Ryzen Edition 2024 R5-7640HS (FRI-H56; mode
 
 Other CPU, BIOS or model combinations get a first-run notice, a non-closable red banner and display-only controls. Display and colour use the Windows system gamma ramp only: this model has no factory hardware LUT, ICC or colour-management data, so Native/sRGB/P3 hardware switching is not offered. Network acceleration, audio, GPU switching, DTT/OS Turbo, automatic performance, process scheduling, fan-status reading and fan presets have been removed from this release; HUNTER is display-only.
 
-Display effects are limited to the Windows system gamma ramp, including eye care, reading, colour temperature and brightness rhythm. HDR and automatic colour management are not validated. Network acceleration, audio, GPU switching, DTT/OS Turbo, automatic performance, process scheduling, fan-status reading and fan presets are intentionally out of scope for this model and are hidden by the capability profile; HUNTER is display-only.
+HDR and automatic colour management are not validated. Network acceleration, audio, GPU switching, DTT/OS Turbo, automatic performance, process scheduling, fan-status reading and fan presets are intentionally out of scope for this model and are hidden by the capability profile; HUNTER is display-only.
 
 ## Build and data
 
@@ -45,10 +55,10 @@ Windows x64, .NET 8 SDK and Windows desktop build prerequisites:
 .\Build.ps1 -OutputDirectory .\artifacts\HonorControl -WithoutCalibration
 ```
 
-`App` contains WinUI, `Broker` the privileged allowlisted commands and background keep-alive, `Shared` the protocol, capability profile and runtime identity, and `BackendSource` the installed-driver interfaces. Output includes .NET and Windows App SDK runtimes. This model has no factory colour calibration data; display adjustment uses the Windows system gamma ramp.
+`App` contains WinUI, `Broker` the privileged allowlisted commands and background keep-alive, `Shared` the protocol, capability profile and runtime identity, and `BackendSource` the installed-driver interfaces. The framework-dependent output requires the .NET 8 Desktop Runtime on the target PC. This model has no factory colour calibration data; display adjustment uses the Windows system gamma ramp.
 
 Preferences, logs and recovery records stay in `%LOCALAPPDATA%\HonorControl`. There is no automatic log upload or update check. Documentation links open a browser; network features access the network when used. Personal state, user SIDs, registry / recovery backups, OEM binaries and calibration data are excluded from the repository. Dependencies retain their own licenses; see [third-party notices](THIRD-PARTY-NOTICES.md).
 
-Build the installer with Build-Installer.ps1 -PackageDirectory .\artifacts\HonorControl. Uninstall through Windows Installed apps. Preferences, logs and hardware drivers are retained.
+Build the installer with `Build-Installer.ps1 -PackageDirectory .\artifacts\HonorControl`. Uninstall through Windows Installed apps. Preferences, logs and hardware drivers are retained.
 
 Runtime logs rotate at 2 MiB with three files per stream. Logs not updated for 14 days are removed. Recovery records, preferences and calibration backups are retained.
