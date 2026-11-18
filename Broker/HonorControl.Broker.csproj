@@ -13,10 +13,4 @@
   <ItemGroup><Compile Include="..\Shared\Protocol.cs" Link="Protocol.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Shared\RuntimeIdentity.cs" Link="Services\RuntimeIdentity.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Shared\DiagnosticLog.cs" Link="Services\DiagnosticLog.cs" /></ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\Shared\SceneCatalog.cs" Link="SceneCatalog.cs" />
-    <Compile Include="..\Shared\SceneContext.cs" Link="SceneContext.cs" />
-    <EmbeddedResource Include="..\App\Assets\DarwinAScenes.tsv" LogicalName="DarwinAScenes.tsv" />
-  </ItemGroup>
-  <ItemGroup><None Update="NetworkPolicy.ps1" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" /></ItemGroup>
 </Project>

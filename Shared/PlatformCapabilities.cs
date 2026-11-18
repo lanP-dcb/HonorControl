@@ -2,62 +2,55 @@ using System;
 
 namespace HonorControl.Shared
 {
-// Pure identity-to-capability mapping. Kept free of WMI so it can be unit tested
-// without touching firmware or the machine's actual hardware.
-internal sealed class PlatformCapabilities
-{
-    public string Name = "Unsupported";
-    public string Display = "";
-    public string Detail = "";
-    public bool FirmwareWrites;
-    public bool ModeWrite;
-    public bool ChargeWrite;
-    public bool DisplayGamma;
-    public bool Network;
-    public bool Hunter;
-    public bool FanPreset;
-    public bool DiscreteGpu;
-    public bool Dtt;
-    public bool SecondFan;
-    public bool FnWrite;
-    public bool MicLight;
-    public bool ColorLut;
-    public bool Audio;
-    public string WriteBlockReason = "";
-
-    public static PlatformCapabilities ForIdentity(string model, string version, string bios, string cpu, string gpu)
+    // The one place that decides which controls are meaningful for a machine.
+    // Only the FRI-H56 build is supported; every other identity is display-only.
+    internal sealed class PlatformCapabilities
     {
-        var capabilities = new PlatformCapabilities();
-        if (model == "FRI-HXX" && version == "M1030" && bios == "1.15" &&
-            cpu.IndexOf("7640HS", StringComparison.Ordinal) >= 0 && gpu.IndexOf("Radeon 760M", StringComparison.Ordinal) >= 0)
-        {
-            capabilities.Name = "FRI-HXX";
-            capabilities.Display = "HONOR MagicBook X14 2024";
-            capabilities.Detail = "Ryzen 5 7640HS / Radeon 760M";
-            capabilities.FirmwareWrites = true;
-            capabilities.ModeWrite = true;
-            capabilities.ChargeWrite = true;
-            capabilities.DisplayGamma = true;
-            capabilities.Network = false;
-            capabilities.Hunter = false;
-            capabilities.FanPreset = false;
-            capabilities.DiscreteGpu = false;
-            capabilities.Dtt = false;
-            capabilities.SecondFan = false;
-            capabilities.FnWrite = true;
-            capabilities.MicLight = false;
-            capabilities.ColorLut = false;
-            capabilities.Audio = false;
-            return capabilities;
-        }
+        public string Name = "Unsupported";
+        public string Display = "Unknown model";
+        public string Detail = "";
+        public bool FirmwareWrites;
+        public bool ModeWrite;
+        public bool ChargeWrite;
+        public bool DisplayGamma;
+        public bool FnWrite;
+        public string WriteBlockReason = "";
 
-        capabilities.Display = model;
-        capabilities.Detail = cpu;
-        capabilities.WriteBlockReason = "Writes are limited to verified platforms. Detected " + model +
-            " / version " + (version.Length == 0 ? "unknown" : version) +
-            " / BIOS " + (bios.Length == 0 ? "unknown" : bios) +
-            " / " + cpu + " / " + gpu + ".";
-        return capabilities;
+        public static PlatformCapabilities ForIdentity(string model, string version, string bios, string cpu, string gpu)
+        {
+            model = (model ?? "").Trim();
+            version = (version ?? "").Trim();
+            bios = (bios ?? "").Trim();
+            cpu = cpu ?? "";
+            gpu = gpu ?? "";
+
+            if (model.Equals("FRI-HXX", StringComparison.OrdinalIgnoreCase) &&
+                version.Equals("M1030", StringComparison.OrdinalIgnoreCase) &&
+                bios.Equals("1.15", StringComparison.OrdinalIgnoreCase) &&
+                cpu.IndexOf("7640HS", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                gpu.IndexOf("Radeon 760M", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return new PlatformCapabilities
+                {
+                    Name = "FRI-HXX",
+                    Display = "HONOR MagicBook X14 2024",
+                    Detail = "Ryzen 5 7640HS / Radeon 760M",
+                    FirmwareWrites = true,
+                    ModeWrite = true,
+                    ChargeWrite = true,
+                    DisplayGamma = true,
+                    FnWrite = true
+                };
+            }
+
+            return new PlatformCapabilities
+            {
+                Name = "Unsupported",
+                Display = model.Length == 0 ? "Unknown model" : model,
+                Detail = "硬件与已验证的 FRI-H56 配置不一致。",
+                WriteBlockReason = "Detected " + model + " / " + version + " / BIOS " + bios + " / " + cpu + " / " + gpu +
+                                   ". Only FRI-HXX M1030 BIOS 1.15 with Ryzen 5 7640HS and Radeon 760M is supported."
+            };
+        }
     }
-}
 }

@@ -28,7 +28,7 @@ internal sealed class BackendClient : IAsyncDisposable
 {
     private readonly SemaphoreSlim _connectionLock = new(1);
     private readonly SemaphoreSlim _requestLock = new(1);
-    private readonly SemaphoreSlim _colorLock = new(1);
+    private readonly SemaphoreSlim _displayLock = new(1);
     private NamedPipeClientStream? _pipe;
     private StreamReader? _reader;
     private StreamWriter? _writer;
@@ -78,27 +78,24 @@ internal sealed class BackendClient : IAsyncDisposable
         await ConnectAsync();
         return await ExchangeAsync(new("firmware", command));
     }
-    public async Task<JsonElement> InstallProfilesAsync()
+
+    public async Task<JsonElement> DisplayGammaAsync(string command, params string[] arguments)
     {
-        await ConnectAsync();
-        return await ExchangeAsync(new("install-profiles"));
+        var allowed = new[] { "display-gamma-status", "display-gamma-apply", "display-gamma-restore" };
+        if (!allowed.Contains(command)) throw new ArgumentException(L.T("不支持的显示调节操作。"));
+        await _displayLock.WaitAsync();
+        try { return await RunStandaloneAsync(command, arguments); }
+        finally { _displayLock.Release(); }
     }
-    public async Task<JsonElement> NetworkStatusAsync() { await ConnectAsync(); return await ExchangeAsync(new("network-status")); }
-    public async Task<JsonElement> GpuStatusAsync() { await ConnectAsync(); return await ExchangeAsync(new("gpu-status")); }
-    public async Task<JsonElement> AudioAsync(string? mode = null)
+
+    // Platform detection needs no elevation, so the UI can size itself before any admin session exists.
+    public async Task<JsonElement> PlatformStatusAsync()
     {
-        await ConnectAsync();
-        return await ExchangeAsync(mode is null ? new("audio-status") : new("audio-apply", mode));
+        await _displayLock.WaitAsync();
+        try { return await RunStandaloneAsync("platform-status"); }
+        finally { _displayLock.Release(); }
     }
-    public async Task<JsonElement> ConfigureGpuAsync(string mode) { await ConnectAsync(); return await ExchangeAsync(new("gpu-configure", mode)); }
-    public async Task<JsonElement> ForceIntegratedGpuAsync() { await ConnectAsync(); return await ExchangeAsync(new("gpu-force-integrated")); }
-    public async Task<JsonElement> PerformanceStatusAsync() { await ConnectAsync(); return await ExchangeAsync(new("performance-status")); }
-    public async Task<JsonElement> DttStatusAsync() { await ConnectAsync(); return await ExchangeAsync(new("dtt-status")); }
-    public async Task<JsonElement> BoostStatusAsync() { await ConnectAsync(); return await ExchangeAsync(new("boost-status")); }
-    public async Task<JsonElement> ConfigurePerformanceAsync(bool enabled) { await ConnectAsync(); return await ExchangeAsync(new("performance-configure", enabled ? "on" : "off")); }
-    public async Task<JsonElement> ConfigureNetworkAsync(NetworkConfig value) { await ConnectAsync(); return await ExchangeAsync(new("network-configure", Network: value)); }
-    public async Task<JsonElement> ScanWifiAsync() { await ConnectAsync(); return await ExchangeAsync(new("wifi-scan")); }
-    public async Task<JsonElement> ConnectWifiAsync(string id, string profile) { await ConnectAsync(); return await ExchangeAsync(new("wifi-connect", profile, InterfaceId: id)); }
+
     private async Task<JsonElement> ExchangeAsync(ControlRequest request)
     {
         await _requestLock.WaitAsync();
@@ -117,29 +114,7 @@ internal sealed class BackendClient : IAsyncDisposable
         catch (OperationCanceledException) { await DisconnectAsync(); throw; }
         finally { _requestLock.Release(); }
     }
-    public async Task<JsonElement> ColorAsync(string command, params string[] arguments)
-    {
-        var allowed = new[] { "status", "native", "srgb", "p3", "restore", "display-effect", "color-watch-start", "color-watch-stop", "color-watch-reapply", "color-reapply", "color-watch-settings", "color-startup-enable", "color-startup-disable" };
-        if (!allowed.Contains(command)) throw new ArgumentException(L.T("不支持的色彩操作。"));
-        await _colorLock.WaitAsync();
-        try { return await RunStandaloneAsync(command, arguments); }
-        finally { _colorLock.Release(); }
-    }
-    public async Task<JsonElement> DisplayGammaAsync(string command, params string[] arguments)
-    {
-        var allowed = new[] { "display-gamma-status", "display-gamma-apply", "display-gamma-restore" };
-        if (!allowed.Contains(command)) throw new ArgumentException(L.T("不支持的显示调节操作。"));
-        await _colorLock.WaitAsync();
-        try { return await RunStandaloneAsync(command, arguments); }
-        finally { _colorLock.Release(); }
-    }
-    // Platform detection needs no elevation, so the UI can size itself before any admin session exists.
-    public async Task<JsonElement> PlatformStatusAsync()
-    {
-        await _colorLock.WaitAsync();
-        try { return await RunStandaloneAsync("platform-status"); }
-        finally { _colorLock.Release(); }
-    }
+
     private async Task<JsonElement> RunStandaloneAsync(string command, params string[] arguments)
     {
         var start = new ProcessStartInfo(Path.Combine(AppPaths.Backend, "HonorStandalone.exe")) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = AppPaths.Backend, RedirectStandardOutput = true, RedirectStandardError = true, StandardOutputEncoding = Encoding.UTF8, StandardErrorEncoding = Encoding.UTF8 };
@@ -159,19 +134,18 @@ internal sealed class BackendClient : IAsyncDisposable
         }
         return JsonDocument.Parse(text).RootElement.Clone();
     }
+
     private async Task DisconnectAsync()
     {
-        // Dispose buffered writers before their underlying pipe; a disconnected
-        // peer must not turn window shutdown into an unhandled UI exception.
         try { _writer?.Dispose(); } catch (IOException) { } catch (ObjectDisposedException) { }
         _writer = null;
         _reader?.Dispose(); _reader = null;
         if (_pipe is not null) { await _pipe.DisposeAsync(); _pipe = null; }
     }
+
     public async ValueTask DisposeAsync()
     {
         try { if (IsConnected) await ExchangeAsync(new("exit")); } catch { }
         await DisconnectAsync();
     }
 }
-

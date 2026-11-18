@@ -6,13 +6,13 @@ using System.Text.Json;
 
 namespace HonorControl;
 
-// Capabilities come from the backend platform profile. The UI only hides what the
-// backend refuses anyway; no control is enabled here that the firmware layer blocks.
+// Capabilities come from the backend platform profile. The UI never enables a
+// control that the firmware layer would refuse.
 public sealed partial class MainWindow
 {
     private string _platformProfile = "";
     private string _platformDisplay = "", _platformDetail = "", _platformModel = "", _platformBios = "", _platformCpu = "";
-    private bool _capHunter, _capFan, _capModeWrite, _capDiscrete, _capChargeWrite, _capColor, _capAudio, _capDisplayGamma, _capNetwork, _capFnWrite, _capDtt;
+    private bool _capModeWrite, _capChargeWrite, _capDisplayGamma, _capFnWrite;
     private bool _platformSupported = true;
 
     private static bool Flag(JsonElement element, string property) =>
@@ -30,17 +30,10 @@ public sealed partial class MainWindow
             _platformModel = status.Text("Model", "");
             _platformBios = status.Text("Bios", "");
             _platformCpu = status.Text("Cpu", "").Trim();
-            _capHunter = Flag(status, "Hunter");
-            _capFan = Flag(status, "FanPreset");
             _capModeWrite = Flag(status, "ModeWrite");
-            _capDiscrete = Flag(status, "DiscreteGpu");
             _capChargeWrite = Flag(status, "ChargeWrite");
-            _capColor = Flag(status, "ColorLut");
-            _capAudio = Flag(status, "Audio");
             _capDisplayGamma = Flag(status, "DisplayGamma");
-            _capNetwork = Flag(status, "Network");
             _capFnWrite = Flag(status, "FnWrite");
-            _capDtt = Flag(status, "Dtt");
         }
         catch (Exception ex)
         {
@@ -68,36 +61,16 @@ public sealed partial class MainWindow
                 UnsupportedBanner.IsOpen = true;
                 AboutScopeText.Text = L.T("当前设备未通过适配检查。所有控制仅作展示，不会读取或写入设备。支持的机型为 HONOR MagicBook X14 2024（FRI-HXX / M1030 / BIOS 1.15 / 7640HS / Radeon 760M）。");
             }
-            else if (_capDisplayGamma)
-                AboutScopeText.Text = L.T("当前机型为 ") + model + " / BIOS " + bios + L.T("：已适配充电保护、性能模式与 Fn 设置，显示使用系统伽马调节；网络、音频、风扇与显卡控制未启用。");
             else
-                AboutScopeText.Text = L.T("当前机型为 ") + model + " / BIOS " + bios + L.T("：读取已验证，写入尚未启用；色彩与音频未适配该机型。");
+                AboutScopeText.Text = L.T("当前机型为 ") + model + " / BIOS " + bios + L.T("：已适配充电保护、智能/高能模式、Fn 与 Windows 系统伽马显示。");
         }
-        if (_tray is not null)
-        {
-            _tray.CanMode = _capModeWrite;
-            _tray.CanHunter = _capHunter;
-            _tray.CanColor = _capColor;
-        }
-        if (!_capFan)
-        {
-            FanPresetRow.Visibility = Visibility.Collapsed;
-            FanAvailability.Text = L.T("该机型不提供风扇预设写入，仅显示实时风扇转速。");
-        }
-        if (!_capHunter)
-        {
-            HunterModeButton.Visibility = Visibility.Visible;
-            HunterModeButton.IsEnabled = false;
-        }
-        else HunterModeButton.Visibility = Visibility.Visible;
+        if (_tray is not null) _tray.CanMode = _capModeWrite;
         if (!_capModeWrite)
         {
             SmartModeButton.IsEnabled = false;
             PerformanceModeButton.IsEnabled = false;
             ModeFootnote.Text = L.T("该机型的性能档位写入尚未验证，当前只读取固件状态。");
         }
-        if (!_capDiscrete) GpuCard.Visibility = Visibility.Collapsed;
-        if (!_capDtt) AutomationCard.Visibility = Visibility.Collapsed;
         if (!_capChargeWrite)
         {
             ChargeHome.IsEnabled = false;
@@ -107,30 +80,14 @@ public sealed partial class MainWindow
             ChargeProtectionToggle.IsEnabled = false;
             ChargeStatus.Text = L.T("该机型的充电阈值写入尚未启用。");
         }
-        if (!_capColor)
+        if (!_capDisplayGamma)
         {
-            ColorProfileCard.Visibility = Visibility.Collapsed;
-            if (!_capDisplayGamma)
-            {
-                DisplayPage.Visibility = Visibility.Collapsed;
-                NavDisplay.Visibility = Visibility.Collapsed;
-            }
-        }
-        if (_capDisplayGamma && !_capColor)
-        {
-            ColorModeGrid.Visibility = Visibility.Collapsed;
-            ColorStatusCard.Visibility = Visibility.Collapsed;
-            ColorWatchCard.Visibility = Visibility.Collapsed;
-        }
-        if (!_capNetwork)
-        {
-            NavNetwork.Visibility = Visibility.Collapsed;
-            NetworkPage.Visibility = Visibility.Collapsed;
+            DisplayPage.Visibility = Visibility.Collapsed;
+            NavDisplay.Visibility = Visibility.Collapsed;
         }
         if (!_capFnWrite) FnCard.Visibility = Visibility.Collapsed;
-        if (!_capAudio) NavAudio.Visibility = Visibility.Collapsed;
         if (!_platformSupported) SetDisplayOnly(Navigation);
-        if (!_capModeWrite && _platformSupported) Show(L.T("当前机型为只读档案：只显示传感器与固件状态，写入需逐项验证。"), InfoBarSeverity.Informational);
+        if (!_capModeWrite && _platformSupported) Show(L.T("当前机型为只读档案：只显示传感器与固件状态。"), InfoBarSeverity.Informational);
     }
 
     private static void SetDisplayOnly(DependencyObject node)

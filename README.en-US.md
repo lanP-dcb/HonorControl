@@ -15,7 +15,7 @@ Independent WinUI 3 device controls for the **HONOR MagicBook X14 2024 (FRI-H56 
 - Eye-care, reading and colour-temperature effects through the Windows system gamma ramp, with one-click restore; no refresh-rate control.
 - Device identification limited to FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M. Other models get a first-run notice, a non-closable red banner and display-only controls.
 - Program Files installation, sign-in startup, tray operation, background recovery, Fn / F1–F12 priority setting, tutorial, changelog and About page.
-- Not enabled for this model: network acceleration, audio, GPU switching, DTT/OS Turbo, automatic performance, process scheduling and fan presets; HUNTER is display-only.
+- Removed in this release: network acceleration, audio, GPU switching, DTT/OS Turbo, automatic performance, process scheduling and fan presets; HUNTER is display-only.
 
 ## Install
 
@@ -31,7 +31,7 @@ Uninstall HONOR PC Manager, separate OSD, HUNTERCAMP, Magic Animation and YOYO s
 
 The verified device is FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M. The 0.15.0 installer enables Broker `--allow-writes`, but only capability-approved charge and performance writes pass; firmware retains final control. Performance mode needs AC and at least 20% battery. HONOR PC Manager must not be actively managing performance mode at the same time.
 
-Other CPU, BIOS or model combinations get a first-run notice, a non-closable red banner and display-only controls. Display and colour use the Windows system gamma ramp only: this model has no factory hardware LUT, ICC or colour-management data, so Native/sRGB/P3 hardware switching is not offered. Network acceleration, audio, GPU switching, DTT/OS Turbo, automatic performance, process scheduling and fan presets are not enabled for this model; HUNTER is display-only.
+Other CPU, BIOS or model combinations get a first-run notice, a non-closable red banner and display-only controls. Display and colour use the Windows system gamma ramp only: this model has no factory hardware LUT, ICC or colour-management data, so Native/sRGB/P3 hardware switching is not offered. Network acceleration, audio, GPU switching, DTT/OS Turbo, automatic performance, process scheduling and fan presets have been removed from this release; HUNTER is display-only.
 
 Display effects are limited to the Windows system gamma ramp. HDR and automatic colour management are not validated. Network acceleration, audio, GPU switching, DTT/OS Turbo, automatic performance, process scheduling and fan presets are intentionally out of scope for this model and are hidden by the capability profile; HUNTER is display-only.
 
@@ -43,10 +43,10 @@ Windows x64, .NET 8 SDK and Windows desktop build prerequisites:
 .\Build.ps1 -OutputDirectory .\artifacts\HonorControl -WithoutCalibration
 ```
 
-`App` contains WinUI, `Broker` the privileged allowlisted commands and controllers, `Shared` the protocol / scene tables, and `BackendSource` the installed-driver interfaces. Output includes .NET and Windows App SDK runtimes. This model has no factory colour calibration data; display adjustment uses the Windows system gamma ramp.
+`App` contains WinUI, `Broker` the privileged allowlisted commands and background keep-alive, `Shared` the protocol, capability profile and runtime identity, and `BackendSource` the installed-driver interfaces. Output includes .NET and Windows App SDK runtimes. This model has no factory colour calibration data; display adjustment uses the Windows system gamma ramp.
 
 Preferences, logs and recovery records stay in `%LOCALAPPDATA%\HonorControl`. There is no automatic log upload or update check. Documentation links open a browser; network features access the network when used. Personal state, user SIDs, registry / recovery backups, OEM binaries and calibration data are excluded from the repository. Dependencies retain their own licenses; see [third-party notices](THIRD-PARTY-NOTICES.md).
 
-Build the installer with Build-Installer.ps1 -PackageDirectory .\artifacts\HonorControl. Uninstall through Windows Installed apps. Preferences, logs, calibration and hardware drivers are retained.
+Build the installer with Build-Installer.ps1 -PackageDirectory .\artifacts\HonorControl. Uninstall through Windows Installed apps. Preferences, logs and hardware drivers are retained.
 
 Runtime logs rotate at 2 MiB with three files per stream. Logs not updated for 14 days are removed. Recovery records, preferences and calibration backups are retained.

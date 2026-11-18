@@ -6,13 +6,13 @@ Honor Control 0.15.0 targets Windows x64 on the HONOR MagicBook X14 2024 (FRI-H5
 
 The HONOR PC Manager package for this model does not provide factory ICC, LUT or colour-management data for the FRI/H family, so Setup does not import factory colour data. Display effects use the Windows system gamma ramp and can be restored to the original settings.
 
-The calibration import script remains available for other models. This model has no factory calibration data to import, so you do not need to run `Import-Calibration.ps1`.
+This model has no factory calibration data to import and does not use ICC/LUT imports; display adjustment uses the Windows system gamma ramp directly.
 
 ## Install or upgrade
 
 Download HonorControl-0.15.0-Setup-x64.exe from Releases. Double-click, approve UAC and choose Install. The setup handles Program Files, Start menu and the HonorControl.UI / HonorControl.Agent sign-in tasks. There is no manual PowerShell step. Use your usual signed-in administrator account.
 
-Open from Start. The tutorial includes usage steps, specific OEM service names and live service detection. Change Chinese / English in About and restart the UI. Upgrades preserve preferences and calibration. Uninstall through Windows Installed apps. Personal data and drivers are retained; calibration is cached in LocalAppData\HonorControl\Calibration and reused on reinstall. Developers can still use Install.ps1 for extracted build output.
+Open from Start. The tutorial includes usage steps and OEM migration notes. Change Chinese / English in About and restart the UI. Upgrades preserve preferences and logs. Uninstall through Windows Installed apps. Personal data, logs and drivers are retained. Developers can still use Install.ps1 for extracted build output.
 
 ## OEM components and removal
 
@@ -27,7 +27,7 @@ Keep these low-level components:
 | `ACPI\PNP0C14\HWMI` ACPI/WMI device (Windows `wmiacpi`) and BIOS/UEFI firmware | Charge protection and Smart/High |
 | `ACPI\PNP0C14\HWMI` ACPI/WMI device | Fn / F1–F12 priority |
 | Windows system gamma ramp | Eye-care, reading mode and colour temperature; no `HnLcdEnhancement`, ICC or hardware LUT |
-| Audio, fan presets, GPU switching and DTT | Not enabled in this FRI build |
+| Audio, fan presets, GPU switching and DTT | Removed in this release; corresponding modules are not loaded |
 
 Do not delete the `ACPI\PNP0C14\HWMI` device, AMD graphics driver, HID or chipset drivers. An HONOR vendor name can also appear in camera or audio drivers; deleting those affects the corresponding hardware.
 
@@ -48,6 +48,6 @@ If WMI returns access denied or the device is missing after removal, reinstall t
 
 ## Check and recover
 
-After sign-in, confirm the tray and hardware connection; About should report `FRI-HXX / BIOS 1.15`. Smart, High and a display-only HUNTER mode should appear; HUNTER cannot be selected and High requires AC and at least 20% battery. Charging should show the current battery percentage, AC state and thresholds, including the custom preset and master switch. Display & colour should offer eye-care, reading and temperature only; restoring gamma returns the panel to its original state. Network, audio, GPU, fan presets and DTT are intentionally hidden by the capability profile.
+After sign-in, confirm the tray and hardware connection; About should report `FRI-HXX / BIOS 1.15`. Smart, High and a display-only HUNTER mode should appear; HUNTER cannot be selected and High requires AC and at least 20% battery. Charging should show the current battery percentage, AC state and thresholds, including the custom preset and master switch. Display & colour should offer eye-care, reading and temperature only; restoring gamma returns the panel to its original state. Network, audio, GPU, fan presets and DTT have been removed from this release and are absent from the UI and package.
 
 Closing the window keeps the tray active; Exit pauses this session. Disabling charge or performance control restores changes it owns from recovery records; exiting restores the original Windows gamma ramp. Vendor software and drivers can be reinstalled from HONOR for the exact model. Feature gaps and verification limits are in [README](README.en-US.md).

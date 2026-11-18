@@ -10,7 +10,7 @@ $source=Join-Path $PSScriptRoot 'SetupSource\Setup.cs'
 $manifest=Join-Path $PSScriptRoot 'SetupSource\setup.manifest'
 $license=Join-Path $PSScriptRoot 'LICENSE'
 $icon=Join-Path $PSScriptRoot 'App\Assets\HonorControl.ico'
-$common=@('/nologo','/codepage:65001','/target:winexe','/platform:x64','/optimize+','/r:System.Core.dll','/r:System.Drawing.dll','/r:System.Windows.Forms.dll','/r:System.Web.Extensions.dll','/r:System.IO.Compression.dll','/r:System.IO.Compression.FileSystem.dll',('/win32manifest:'+$manifest),('/win32icon:'+$icon),('/resource:'+$license+',License'))
+$common=@('/nologo','/codepage:65001','/target:winexe','/platform:x64','/optimize+','/r:System.Core.dll','/r:System.Drawing.dll','/r:System.Windows.Forms.dll','/r:System.IO.Compression.dll','/r:System.IO.Compression.FileSystem.dll',('/win32manifest:'+$manifest),('/win32icon:'+$icon),('/resource:'+$license+',License'))
 & $compiler @common /define:UNINSTALL ('/out:'+(Join-Path $package 'HonorControl.Uninstall.exe')) $source
 if($LASTEXITCODE -ne 0){throw 'Uninstaller compilation failed.'}
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Uninstall.ps1') -Destination $package -Force
