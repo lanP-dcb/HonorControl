@@ -2,16 +2,18 @@
 
 ## 0.15.0
 
-- 适配荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）：充电保护、智能/高能性能模式与系统伽马显示；网络、音频、显卡、DTT、风扇预设按能力隐藏。
+- 适配荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）：充电保护、智能/高能性能模式与系统伽马显示；网络、音频、显卡、DTT、风扇状态与预设按能力隐藏。
 - 充电保护新增自定义阈值、总开关（开启默认家用，关闭恢复充满停止）与固件回读；Fn/F1–F12 优先级设置启用；HUNTER 仅展示不可选；移除内屏刷新率设置；非适配机型首次运行提示、顶部红色横幅与仅展示状态。
-- 精简应用与安装包：移除音频、网络、显卡、DTT、自动性能、进程调度、硬件色彩/ICC/LUT、刷新率与风扇写入模块；安装包不再携带色彩校准组件、场景表、App SDK AI/ML/Widgets 运行库与多余语言目录，体积由约 288 MB 降至约 236 MB。
+- 精简应用与安装包：移除音频、网络、显卡、DTT、自动性能、进程调度、硬件色彩/ICC/LUT、刷新率、风扇状态读取与风扇写入模块；安装包不再携带色彩校准组件、场景表、App SDK AI/ML/Widgets 运行库与多余语言目录，体积由约 288 MB 降至约 236 MB。
 - 覆盖安装时会删除旧版本残留文件，避免升级后仍保留已移除的组件。
 - 显示页恢复“亮度节律（系统伽马）”，并移除“夜间模式 / 亮度与显示 / 高级显示设置”三个系统设置跳转按钮。
-- Adapts the HONOR MagicBook X14 2024 (FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M): charging protection, Smart/Performance modes and system gamma display; network, audio, GPU, DTT and fan presets are capability-hidden.
+- 性能与散热页移除风扇卡片，不再读取风扇传感器或显示转速。
+- Adapts the HONOR MagicBook X14 2024 (FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M): charging protection, Smart/Performance modes and system gamma display; network, audio, GPU, DTT, fan status and presets are capability-hidden.
 - Adds custom charge thresholds, a master switch (Home when on, charge-to-full when off) and firmware readback; enables Fn / F1–F12 priority; shows HUNTER as display-only; removes the refresh-rate setting; and adds first-run unsupported-device notice, a non-closable red banner and display-only controls.
-- Simplifies the app and installer: removes audio, network, GPU, DTT, automatic performance, process scheduling, hardware colour/ICC/LUT, refresh-rate and fan-write modules; the installer no longer ships colour calibration components, scene tables, App SDK AI/ML/Widgets runtimes or extra locale folders, reducing the payload from about 288 MB to about 236 MB.
+- Simplifies the app and installer: removes audio, network, GPU, DTT, automatic performance, process scheduling, hardware colour/ICC/LUT, refresh-rate, fan-status reading and fan-write modules; the installer no longer ships colour calibration components, scene tables, App SDK AI/ML/Widgets runtimes or extra locale folders, reducing the payload from about 288 MB to about 236 MB.
 - Upgrades now remove files left by older versions so deleted components do not remain in the installation directory.
 - Restores brightness rhythm (system gamma) on the display page and removes the Night light / Brightness and display / Advanced display settings shortcuts.
+- Removes the fan card from the Performance and cooling page; fan sensors are no longer read or displayed.
 
 ## 0.14.5
 

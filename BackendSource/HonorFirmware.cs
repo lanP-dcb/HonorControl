@@ -234,10 +234,8 @@ internal static class HonorFirmware
     {
         int mode = Mode(session);
         byte[] temp = TryCall(session, 2, 2, 0);
-        byte[] fan = TryCall(session, 2, 8, 0);
         byte[] volts = TryCall(session, 2, 9, 2);
         int celsius = temp != null && temp.Length > 2 ? temp[2] : 0;
-        int fan0 = fan != null && fan.Length > 2 ? Word(fan, 1) : 0;
         int millivolts = volts != null && volts.Length > 2 ? Word(volts, 1) : 0;
         return new
         {
@@ -248,8 +246,6 @@ internal static class HonorFirmware
             ModeWrite = PlatformProfile.Current.ModeWrite,
             TurboXAvailable = PlatformProfile.Current.ModeWrite && PerformanceOwnerCount() == 0,
             CpuCelsius = celsius,
-            Fan0ActualRpm = fan0,
-            Fan1ActualRpm = 0,
             PdAdapterWatts = millivolts / 1000.0,
             AcOnline = false,
             BatteryPercent = 0,

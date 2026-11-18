@@ -162,13 +162,8 @@ public sealed partial class MainWindow : Window
         UpdateMode(value.Number("ModeCode"));
         int temperature = value.Number("CpuCelsius");
         CpuTemperature.Text = temperature is >= 0 and <= 130 ? temperature + " °C" : "— °C";
-        Fan0Rpm.Text = FormatRpm(value.Number("Fan0ActualRpm"));
-        Fan1Rpm.Text = FormatRpm(value.Number("Fan1ActualRpm"));
-        Fan0Target.Text = L.T("目标 ") + FormatRpm(value.Number("Fan0TargetRpm")) + " RPM";
-        Fan1Target.Text = L.T("目标 ") + FormatRpm(value.Number("Fan1TargetRpm")) + " RPM";
         UpdateSelections();
     }
-    private static string FormatRpm(int rpm) => rpm is >= 0 and <= 8000 ? rpm.ToString("N0") : "—";
     private void UpdateSelections()
     {
         SmartModeButton.IsChecked = _mode == 0;
@@ -207,7 +202,6 @@ public sealed partial class MainWindow : Window
     {
         await RunAsync(async () => { _modeRevision++; UpdateFirmware(await _backend.HardwareAsync(command)); }, L.T("切换成功"));
     }
-    private async void Refresh_Click(object sender, RoutedEventArgs e) => await RunAsync(async () => UpdateFirmware(await _backend.HardwareAsync("firmware-status")), L.T("传感器状态已刷新。"));
     private async void ReadCharge_Click(object sender, RoutedEventArgs e) => await RunAsync(async () => UpdateCharge(await _backend.HardwareAsync("charge-status")), null);
     private async void Charge_Click(object sender, RoutedEventArgs e)
     {

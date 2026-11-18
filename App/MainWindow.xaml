@@ -46,14 +46,6 @@
                 </Grid>
               </StackPanel>
 
-              <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="16">
-                <Grid><StackPanel Spacing="5"><TextBlock Text="风扇" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="FanAvailability" Text="只读传感器；本机不提供风扇预设写入。" Style="{StaticResource CaptionLabel}"/></StackPanel><Button Click="Refresh_Click" ToolTipService.ToolTip="刷新传感器"><FontIcon Glyph="&#xE72C;" FontSize="15"/></Button></Grid>
-                <Grid ColumnSpacing="28"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                  <StackPanel Spacing="8"><TextBlock x:Uid="Text028" Text="风扇 1" Style="{StaticResource CaptionLabel}"/><StackPanel Orientation="Horizontal" Spacing="7"><TextBlock x:Name="Fan0Rpm" Text="—" FontSize="30" FontWeight="SemiBold"/><TextBlock Text="RPM" Foreground="{ThemeResource MutedBrush}" VerticalAlignment="Bottom" Margin="0,0,0,5"/></StackPanel><TextBlock x:Name="Fan0Target" Text="目标 — RPM" Style="{StaticResource CaptionLabel}"/></StackPanel>
-                  <StackPanel Grid.Column="1" Spacing="8"><TextBlock x:Uid="Text030" Text="风扇 2" Style="{StaticResource CaptionLabel}"/><StackPanel Orientation="Horizontal" Spacing="7"><TextBlock x:Name="Fan1Rpm" Text="—" FontSize="30" FontWeight="SemiBold"/><TextBlock Text="RPM" Foreground="{ThemeResource MutedBrush}" VerticalAlignment="Bottom" Margin="0,0,0,5"/></StackPanel><TextBlock x:Name="Fan1Target" Text="目标 — RPM" Style="{StaticResource CaptionLabel}"/></StackPanel>
-                </Grid>
-              </StackPanel></Border>
-
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="12">
                 <Grid><StackPanel Spacing="5"><TextBlock x:Uid="Text052" Text="电池充电保护" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="ChargeStatus" Text="读取固件保存的充电阈值。" Style="{StaticResource CaptionLabel}"/></StackPanel><Button x:Uid="Text054" HorizontalAlignment="Right" Content="读取阈值" Click="ReadCharge_Click"/></Grid>
                 <ToggleSwitch x:Name="ChargeProtectionToggle" Header="充电保护总开关" OnContent="开启" OffContent="关闭" Toggled="ChargeProtection_Toggled"/>

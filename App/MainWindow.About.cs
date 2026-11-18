@@ -42,7 +42,7 @@ public sealed partial class MainWindow
             }));
             tabs.Items.Add(GuideTab(L.T("更新记录"), new[]
             {
-                (Version, L.T("适配荣耀笔记本 X14 锐龙版 2024（FRI-HXX / M1030 / BIOS 1.15 / 7640HS / Radeon 760M）：充电保护、智能/高能模式、Fn 与 F1–F12、Windows 伽马显示；移除未使用的网络、音频、GPU、风扇预设与 DTT 组件。"))
+                (Version, L.T("适配荣耀笔记本 X14 锐龙版 2024（FRI-HXX / M1030 / BIOS 1.15 / 7640HS / Radeon 760M）：充电保护、智能/高能模式、Fn 与 F1–F12、Windows 伽马显示；移除未使用的网络、音频、GPU、风扇状态与预设及 DTT 组件。"))
             }));
             tabs.Items.Add(GuideTab(L.T("支持与须知"), new[]
             {
