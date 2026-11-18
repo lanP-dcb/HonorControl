@@ -23,7 +23,7 @@ Task<JsonElement> Hardware(string command)
 void Require(bool condition, string message) { if (!condition) throw new Exception(message); }
 
 var fri = PlatformCapabilities.ForIdentity("FRI-HXX", "M1030", "1.15", "AMD Ryzen 5 7640HS w/ Radeon 760M Graphics", "AMD Radeon 760M Graphics | Honor Virtual Display Device");
-Require(fri.Name == "FRI-HXX" && fri.FirmwareWrites && fri.ModeWrite && fri.ChargeWrite && fri.DisplayGamma, "The FRI-HXX capability profile lost a supported write path.");
+Require(fri.Name == "FRI-HXX" && fri.FirmwareWrites && fri.ModeWrite && fri.ChargeWrite && fri.DisplayGamma && fri.FnWrite, "The FRI-HXX capability profile lost a supported write path.");
 Require(!fri.Network && !fri.Hunter && !fri.FanPreset && !fri.DiscreteGpu && !fri.Dtt && !fri.ColorLut && !fri.Audio, "The FRI-HXX capability profile enabled an unsupported feature.");
 var unknown = PlatformCapabilities.ForIdentity("FRI-HXX", "M1030", "1.16", "AMD Ryzen 5 7640HS w/ Radeon 760M Graphics", "AMD Radeon 760M Graphics");
 Require(!unknown.FirmwareWrites && unknown.WriteBlockReason.Contains("1.16"), "An unknown BIOS revision was not rejected.");

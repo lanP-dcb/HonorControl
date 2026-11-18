@@ -25,15 +25,15 @@ Keep these low-level components:
 | Keep | Needed for |
 | --- | --- |
 | `ACPI\PNP0C14\HWMI` ACPI/WMI device (Windows `wmiacpi`) and BIOS/UEFI firmware | Charge protection and Smart/High |
-| AMD Radeon graphics driver and Windows display configuration | Internal-panel refresh rate |
+| `ACPI\PNP0C14\HWMI` ACPI/WMI device | Fn / F1–F12 priority |
 | Windows system gamma ramp | Eye-care, reading mode and colour temperature; no `HnLcdEnhancement`, ICC or hardware LUT |
-| Audio, Fn, fan presets, GPU switching and DTT | Not enabled in this FRI build |
+| Audio, fan presets, GPU switching and DTT | Not enabled in this FRI build |
 
 Do not delete the `ACPI\PNP0C14\HWMI` device, AMD graphics driver, HID or chipset drivers. An HONOR vendor name can also appear in camera or audio drivers; deleting those affects the corresponding hardware.
 
 Recommended removal order:
 
-1. Install and verify Honor Control: charge thresholds, Smart/High, gamma and refresh rate.
+1. Install and verify Honor Control: charge thresholds, Smart/High, Fn and gamma.
 2. Exit the HONOR PC Manager performance backend; confirm `HnPerformanceCenter` and `HnPerfPowerNexus` are gone. `MBAProcessWatcher` may restart them; stop `MBAMainService` if necessary.
 3. Uninstall HONOR PC Manager from Windows Installed apps, then reboot.
 4. Confirm `ACPI\PNP0C14\HWMI` is still healthy in Device Manager; run `platform-status` and `charge-status`, then test one charge write, Smart/High switching and gamma restore.
@@ -48,6 +48,6 @@ If WMI returns access denied or the device is missing after removal, reinstall t
 
 ## Check and recover
 
-After sign-in, confirm the tray and hardware connection; About should report `FRI-HXX / BIOS 1.15`. Only Smart and High modes should appear; High requires AC and at least 20% battery. Charging should show the current battery percentage, AC state and thresholds. Display & colour should offer eye-care, reading, temperature and refresh rate only; restoring gamma returns the panel to its original state. Network, audio, Fn, GPU, fan presets, HUNTER and DTT are intentionally hidden by the capability profile.
+After sign-in, confirm the tray and hardware connection; About should report `FRI-HXX / BIOS 1.15`. Smart, High and a display-only HUNTER mode should appear; HUNTER cannot be selected and High requires AC and at least 20% battery. Charging should show the current battery percentage, AC state and thresholds, including the custom preset and master switch. Display & colour should offer eye-care, reading and temperature only; restoring gamma returns the panel to its original state. Network, audio, GPU, fan presets and DTT are intentionally hidden by the capability profile.
 
 Closing the window keeps the tray active; Exit pauses this session. Disabling charge or performance control restores changes it owns from recovery records; exiting restores the original Windows gamma ramp. Vendor software and drivers can be reinstalled from HONOR for the exact model. Feature gaps and verification limits are in [README](README.en-US.md).

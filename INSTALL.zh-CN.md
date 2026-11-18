@@ -27,15 +27,15 @@ Honor Control 0.15.0 适配 Windows x64 的荣耀笔记本 X14 锐龙版 2024（
 | 功能 | 依赖 |
 | --- | --- |
 | 充电保护、智能/高能 | 本机 ACPI/WMI 设备 `ACPI\PNP0C14\HWMI`（Windows `wmiacpi`）与 BIOS/UEFI 固件 |
-| 内屏刷新率 | AMD Radeon 显卡驱动与 Windows 显示配置 |
+| Fn / F1–F12 优先级 | 本机 ACPI/WMI 设备 `ACPI\PNP0C14\HWMI` |
 | 护眼、电子书、色温 | Windows 系统伽马表；不需要 `HnLcdEnhancement`、ICC 或硬件 LUT |
-| 音频、Fn、风扇预设、GPU 切换、DTT | 当前 FRI 版本不启用 |
+| 音频、风扇预设、GPU 切换、DTT | 当前 FRI 版本不启用 |
 
 不要删除 `ACPI\PNP0C14\HWMI` 设备、AMD 显卡驱动、HID 与芯片组驱动；荣耀名称也可能出现在摄像头、音频等设备驱动中，删除会影响对应硬件。
 
 建议卸载顺序：
 
-1. 安装并验证 Honor Control（充电阈值、智能/高能、gamma、刷新率）。
+1. 安装并验证 Honor Control（充电阈值、智能/高能、Fn、gamma）。
 2. 从托盘退出荣耀电脑管家性能后台；确认 `HnPerformanceCenter` 与 `HnPerfPowerNexus` 已结束。`MBAProcessWatcher` 可能重新拉起它们；必要时先停止 `MBAMainService`。
 3. 通过 Windows「已安装的应用」卸载荣耀电脑管家，重启。
 4. 在设备管理器确认 `ACPI\PNP0C14\HWMI` 仍为正常；运行 `platform-status`、`charge-status`，再测试一次充电写入、智能/高能切换和 gamma 恢复。
@@ -51,10 +51,10 @@ Honor Control 0.15.0 适配 Windows x64 的荣耀笔记本 X14 锐龙版 2024（
 ## 验证
 
 - 重新登录后确认托盘与硬件控制已连接；关于页显示 `FRI-HXX / BIOS 1.15`。
-- 读取当前性能模式，只应出现智能和高能；高能需要插电且电量至少 20%。
-- 读取充电阈值，显示当前电池百分比与接电状态；用家用 40–70% 或办公 70–90% 写入并回读。
-- 显示与色彩页只应提供眼护、电子书、色温与刷新率；调整 gamma 后点恢复应回到原始状态。
-- 网络、音频、Fn、GPU、风扇预设、HUNTER 与 DTT 在本机型不显示，这是按能力位折叠，不是加载失败。
+- 读取当前性能模式，应出现智能与高能；HUNTER 仅展示且不可选。
+- 读取充电阈值，显示当前电池百分比与接电状态；测试家用、办公、差旅、自定义以及总开关。
+- 显示与色彩页只应提供护眼、电子书与色温；调整 gamma 后点恢复应回到原始状态。
+- 网络、音频、GPU、风扇预设与 DTT 在本机型不显示，这是按能力位折叠，不是加载失败。
 
 ## 暂停与恢复
 

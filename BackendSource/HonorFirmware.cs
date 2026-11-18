@@ -229,6 +229,14 @@ internal static class HonorFirmware {
             if(command=="charge-home")return session.SetCharge(40,70);
             if(command=="charge-office")return session.SetCharge(70,90);
             if(command=="charge-travel")return session.SetCharge(95,100);
+            if(command=="charge-off")return session.SetCharge(0,100);
+            if(command.StartsWith("charge-custom:")){
+                var parts=command.Split(':');
+                int customStart, customStop;
+                if(parts.Length!=3||!Int32.TryParse(parts[1],out customStart)||!Int32.TryParse(parts[2],out customStop)||customStart<20||customStop>100||customStart>=customStop)
+                    throw new ArgumentException("充电阈值必须满足：开始值 20–99%，停止值 21–100%，且开始值小于停止值。");
+                return session.SetCharge((byte)customStart,(byte)customStop);
+            }
             if(command=="gpu-status")return session.GpuSnapshot();
             if(command=="gpu-dual")return session.SetGpu(true);
             if(command=="gpu-integrated")return session.SetGpu(false);

@@ -2,8 +2,10 @@
 
 ## 0.15.0
 
-- 适配荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）：充电保护、智能/高能性能模式与系统伽马显示；网络、音频、Fn、显卡、DTT、HUNTER 与风扇预设按能力隐藏。
-- Adapts the HONOR MagicBook X14 2024 (FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M): charging protection, Smart/Performance modes and system gamma display; network, audio, Fn, GPU, DTT, HUNTER and fan presets are capability-hidden.
+- 适配荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）：充电保护、智能/高能性能模式与系统伽马显示；网络、音频、显卡、DTT、风扇预设按能力隐藏。
+- 充电保护新增自定义阈值、总开关（开启默认家用，关闭恢复充满停止）与固件回读；Fn/F1–F12 优先级设置启用；HUNTER 仅展示不可选；移除内屏刷新率设置；非适配机型首次运行提示、顶部红色横幅与仅展示状态。
+- Adapts the HONOR MagicBook X14 2024 (FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M): charging protection, Smart/Performance modes and system gamma display; network, audio, GPU, DTT and fan presets are capability-hidden.
+- Adds custom charge thresholds, a master switch (Home when on, charge-to-full when off) and firmware readback; enables Fn / F1–F12 priority; shows HUNTER as display-only; removes the refresh-rate setting; and adds first-run unsupported-device notice, a non-closable red banner and display-only controls.
 
 ## 0.14.5
 

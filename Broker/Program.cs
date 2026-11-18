@@ -18,7 +18,7 @@ if (resident) { try { if (!singleton.WaitOne(0)) return; } catch (AbandonedMutex
 HonorControl.Diagnostics.DiagnosticLog.Clean(RuntimeIdentity.UserState);
 var backend = Path.Combine(AppContext.BaseDirectory, "Backend");
 string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "unknown";
-var allowed = new HashSet<string>(StringComparer.Ordinal) { "platform-status", "firmware-status", "firmware-mode", "firmware-policy", "firmware-smart", "firmware-performance", "firmware-hunter", "fan-1", "fan-2", "fan-3", "fan-4", "fan-5", "charge-status", "charge-home", "charge-office", "charge-travel", "keyboard-status", "keyboard-icons", "keyboard-fkeys", "keyboard-restore-preference" };
+var allowed = new HashSet<string>(StringComparer.Ordinal) { "platform-status", "firmware-status", "firmware-mode", "firmware-policy", "firmware-smart", "firmware-performance", "firmware-hunter", "fan-1", "fan-2", "fan-3", "fan-4", "fan-5", "charge-status", "charge-home", "charge-office", "charge-travel", "charge-off", "keyboard-status", "keyboard-icons", "keyboard-fkeys", "keyboard-restore-preference" };
 allowed.UnionWith(["touchpad-status", "mic-light-muted", "mic-light-active", "display-gamma-status", "display-gamma-apply", "display-gamma-restore"]);
 using var lifetime = new CancellationTokenSource();
 if (!resident) lifetime.CancelAfter(TimeSpan.FromHours(12));
@@ -93,7 +93,7 @@ async Task HandleAsync(NamedPipeServerStream pipe)
                 else if (request.Action == "network-configure" && request.Network is not null) response = new(true, JsonSerializer.SerializeToElement(await network.ConfigureAsync(request.Network)));
                 else if (request.Action == "wifi-scan") { await Task.Run(() => WifiNative.Read(true)); await Task.Delay(2000); response = new(true, JsonSerializer.SerializeToElement(await Task.Run(() => WifiNative.Read()))); }
                 else if (request.Action == "wifi-connect" && request.Command is not null && request.InterfaceId is not null) { await WifiNative.ConnectAsync(request.InterfaceId, request.Command); response = new(true, JsonSerializer.SerializeToElement(WifiNative.Read())); }
-                else if (request.Action == "firmware" && request.Command is { } command && allowed.Contains(command))
+                else if (request.Action == "firmware" && request.Command is { } command && (allowed.Contains(command) || command.StartsWith("charge-custom:", StringComparison.Ordinal)))
                 {
                     if (command is "firmware-smart" or "firmware-performance" or "firmware-hunter" && PerformanceOwnerRunning())
                         throw new InvalidOperationException("荣耀电脑管家正在管理性能模式，请先退出电脑管家后重试。");

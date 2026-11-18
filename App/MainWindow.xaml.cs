@@ -56,6 +56,12 @@ public sealed partial class MainWindow : Window
             AppWindow.Move(new PointInt32(work.X + (work.Width - width) / 2, work.Y + (work.Height - height) / 2));
             _ready = true;
             await LoadPlatformAsync();
+            if (!_platformSupported)
+            {
+                if (AppPaths.BackgroundLaunch) AppWindow.Hide();
+                if (!AppPaths.BackgroundLaunch) await ShowUnsupportedNoticeAsync();
+                return;
+            }
             LoadScheduler();
             LoadHotkeys();
             StartFirmwareKeys();
@@ -66,7 +72,6 @@ public sealed partial class MainWindow : Window
             await RunAsync(async () =>
             {
                 if (_capColor || _capDisplayGamma) { await RefreshColorAsync(); ReadColorPreferences(); }
-                await ReadRefreshRateAsync();
                 if (AppPaths.Installed || AppPaths.ExistingPipeName is not null)
                 {
                     UpdateFirmware(await _backend.HardwareAsync("firmware-status"));
@@ -83,7 +88,7 @@ public sealed partial class MainWindow : Window
             if (AppPaths.Installed) { _residentTimer.Start(); await MaintainResidentAsync(); }
             if (!AppPaths.BackgroundLaunch) await ShowStartupGuideAsync();
         };
-        Activated += async (_, e) => { _active = e.WindowActivationState != WindowActivationState.Deactivated; if (!_active) _hotkeys?.Resume(); else if (_capturingHotkey) _hotkeys?.Suspend(); if (_active && _ready && DisplayPage.Visibility == Visibility.Visible) await ReadRefreshRateAsync(); };
+        Activated += (_, e) => { _active = e.WindowActivationState != WindowActivationState.Deactivated; if (!_active) _hotkeys?.Resume(); else if (_capturingHotkey) _hotkeys?.Suspend(); };
         _timer.Tick += async (_, _) =>
         {
             if (!_closing) RefreshScheduler();
@@ -141,6 +146,7 @@ public sealed partial class MainWindow : Window
 
     private async Task RunAsync(Func<Task> operation, string? success, bool switchFeedback = false)
     {
+        if (!_platformSupported) { Show(L.T("当前设备未通过适配检查，所有功能仅作展示。"), InfoBarSeverity.Warning); return; }
         if (_busy || _closing) return;
         _busy = true; BusyRing.IsActive = true; BusyRing.Visibility = Visibility.Visible;
         try
@@ -340,9 +346,7 @@ public sealed partial class MainWindow : Window
         ChargeStatus.Text = battery >= 0
             ? L.F($"电池 {battery}% · {power} · {start}% 开始充电 / {stop}% 停止充电")
             : L.F($"固件读数 · {start}% 开始充电 / {stop}% 停止充电");
-        ChargeHome.IsChecked = (start, stop) == (40, 70);
-        ChargeOffice.IsChecked = (start, stop) == (70, 90);
-        ChargeTravel.IsChecked = (start, stop) == (95, 100);
+        UpdateChargeSelection(start, stop);
     }
     private async void Charge_Click(object sender, RoutedEventArgs e)
     {
@@ -426,7 +430,7 @@ public sealed partial class MainWindow : Window
             "display" => DisplayPage, "audio" => AudioPage, "network" => NetworkPage,
             "settings" => SettingsPage, "about" => AboutPage, _ => PerformancePage
         });
-        if (tag == "display") await RunAsync(async () => { await RefreshColorAsync(); ReadColorPreferences(); await ReadRefreshRateAsync(); }, null);
+        if (tag == "display") await RunAsync(async () => { await RefreshColorAsync(); ReadColorPreferences(); }, null);
         else if (tag == "audio" && (AppPaths.Installed || _backend.IsConnected)) await RunAsync(RefreshAudioAsync, null);
         else if (tag == "network") await RunAsync(async () => { UpdateNetwork(await _backend.NetworkStatusAsync(), true); UpdateDownloadChannels(); }, null);
     }

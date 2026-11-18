@@ -1,13 +1,14 @@
 <Window x:Class="HonorControl.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Honor Control">
   <Grid x:Name="Root" RequestedTheme="Dark" Background="{ThemeResource PageBrush}">
-    <Grid.RowDefinitions><RowDefinition Height="48"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+    <Grid.RowDefinitions><RowDefinition Height="48"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
     <Grid x:Name="AppTitleBar" Background="Transparent" Margin="18,0,150,0">
       <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
         <Border Background="#A5CEFF" CornerRadius="7" Width="25" Height="25"><TextBlock Text="H" Foreground="#18283F" FontSize="17" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
         <TextBlock Text="Honor Control" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
       </StackPanel>
     </Grid>
-    <NavigationView x:Name="Navigation" Grid.Row="1" PaneDisplayMode="Left" OpenPaneLength="202" IsBackButtonVisible="Collapsed" IsPaneToggleButtonVisible="False" IsSettingsVisible="False" SelectionChanged="Navigation_SelectionChanged" IsPaneOpen="True">
+    <InfoBar x:Name="UnsupportedBanner" Grid.Row="1" IsOpen="False" IsClosable="False" Severity="Error" Title="设备未通过适配检查" Message="当前设备不在 Honor Control 的适配范围内。所有功能仅作展示，不会向设备写入任何设置。" Margin="18,4,18,6"/>
+    <NavigationView x:Name="Navigation" Grid.Row="2" PaneDisplayMode="Left" OpenPaneLength="202" IsBackButtonVisible="Collapsed" IsPaneToggleButtonVisible="False" IsSettingsVisible="False" SelectionChanged="Navigation_SelectionChanged" IsPaneOpen="True">
       <NavigationView.MenuItems>
         <NavigationViewItem x:Uid="Text001" Content="性能与散热" Tag="performance" IsSelected="True"><NavigationViewItem.Icon><FontIcon Glyph="&#xE945;"/></NavigationViewItem.Icon></NavigationViewItem>
         <NavigationViewItem x:Uid="Text002" x:Name="NavDisplay" Content="显示与色彩" Tag="display"><NavigationViewItem.Icon><FontIcon Glyph="&#xE7F4;"/></NavigationViewItem.Icon></NavigationViewItem>
@@ -42,7 +43,7 @@
                 <Grid ColumnSpacing="14"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                   <ToggleButton x:Name="SmartModeButton" Tag="firmware-smart" Click="Mode_Click" Style="{StaticResource ModeStyle}"><StackPanel Spacing="13"><FontIcon Glyph="&#xE945;" HorizontalAlignment="Left" FontSize="25" Foreground="{ThemeResource AccentTextBrush}"/><Grid><TextBlock x:Uid="Text017" Text="智能" FontSize="21" FontWeight="SemiBold"/><TextBlock x:Uid="Text018" x:Name="SmartSelected" Text="✓ 已选择" Visibility="Collapsed" Foreground="{ThemeResource AccentTextBrush}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid><TextBlock x:Uid="Text019" Text="固件模式 0，可在电池供电时使用。" Style="{StaticResource CaptionLabel}"/></StackPanel></ToggleButton>
                   <ToggleButton x:Name="PerformanceModeButton" Grid.Column="1" Tag="firmware-performance" Click="Mode_Click" Style="{StaticResource ModeStyle}"><StackPanel Spacing="13"><FontIcon Glyph="&#xE9D9;" HorizontalAlignment="Left" FontSize="25" Foreground="{ThemeResource AccentTextBrush}"/><Grid><TextBlock x:Uid="Text020" Text="高能" FontSize="21" FontWeight="SemiBold"/><TextBlock x:Uid="Text021" x:Name="PerformanceSelected" Text="✓ 已选择" Visibility="Collapsed" Foreground="{ThemeResource AccentTextBrush}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid><TextBlock x:Uid="Text022" Text="固件模式 1，需接通电源且电量至少 20%。" Style="{StaticResource CaptionLabel}"/></StackPanel></ToggleButton>
-                  <ToggleButton x:Name="HunterModeButton" Grid.Column="2" Tag="firmware-hunter" Click="Mode_Click" Style="{StaticResource ModeStyle}"><StackPanel Spacing="13"><FontIcon Glyph="&#xE7FC;" HorizontalAlignment="Left" FontSize="25" Foreground="{ThemeResource AccentTextBrush}"/><Grid><TextBlock Text="HUNTER" FontSize="21" FontWeight="SemiBold"/><TextBlock x:Uid="Text023" x:Name="HunterSelected" Text="✓ 已选择" Visibility="Collapsed" Foreground="{ThemeResource AccentTextBrush}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid><TextBlock x:Uid="Text024" Text="固件模式 3，需圆口电源或 135 W 以上 PD。" Style="{StaticResource CaptionLabel}"/></StackPanel></ToggleButton>
+                  <ToggleButton x:Name="HunterModeButton" Grid.Column="2" IsEnabled="False" ToolTipService.ToolTip="本机仅展示 HUNTER；该模式需要圆口电源、独立显卡与受支持的风扇预设，当前设备不具备这些条件。" Style="{StaticResource ModeStyle}"><StackPanel Spacing="13"><FontIcon Glyph="&#xE7FC;" HorizontalAlignment="Left" FontSize="25" Foreground="{ThemeResource MutedBrush}"/><Grid><TextBlock Text="HUNTER" FontSize="21" FontWeight="SemiBold" Foreground="{ThemeResource MutedBrush}"/><TextBlock x:Uid="Text023" x:Name="HunterSelected" Text="✓ 已选择" Visibility="Collapsed" Foreground="{ThemeResource AccentTextBrush}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid><TextBlock x:Uid="Text024" Text="仅作展示，本机不可选。" Style="{StaticResource CaptionLabel}"/></StackPanel></ToggleButton>
                 </Grid>
               </StackPanel>
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="20">
@@ -85,11 +86,20 @@
               </Border>
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="12">
                 <Grid><StackPanel Spacing="5"><TextBlock x:Uid="Text052" Text="电池充电保护" Style="{StaticResource SectionLabel}"/><TextBlock x:Uid="Text053" x:Name="ChargeStatus" Text="读取固件保存的充电阈值。" Style="{StaticResource CaptionLabel}"/></StackPanel><Button x:Uid="Text054" HorizontalAlignment="Right" Content="读取阈值" Click="ReadCharge_Click"/></Grid>
+                <ToggleSwitch x:Name="ChargeProtectionToggle" Header="充电保护总开关" OnContent="开启" OffContent="关闭" Toggled="ChargeProtection_Toggled"/>
+                <TextBlock Text="开启后默认使用家用 40–70%；关闭后恢复为 0–100%，即充满后停止。" Style="{StaticResource CaptionLabel}"/>
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <ToggleButton x:Uid="Text055" x:Name="ChargeHome" Tag="charge-home" Content="家用 · 40–70%" Style="{StaticResource SelectionToggleStyle}" Click="Charge_Click"/>
                   <ToggleButton x:Uid="Text056" x:Name="ChargeOffice" Tag="charge-office" Content="办公 · 70–90%" Style="{StaticResource SelectionToggleStyle}" Click="Charge_Click"/>
                   <ToggleButton x:Uid="Text057" x:Name="ChargeTravel" Tag="charge-travel" Content="差旅 · 95–100%" Style="{StaticResource SelectionToggleStyle}" Click="Charge_Click"/>
+                  <ToggleButton x:Name="ChargeCustomButton" Content="自定义" Style="{StaticResource SelectionToggleStyle}" Click="ChargeCustom_Selected"/>
                 </StackPanel>
+                <StackPanel x:Name="ChargeCustomPanel" Orientation="Horizontal" Spacing="12" Visibility="Collapsed">
+                  <NumberBox x:Name="ChargeStartBox" Header="开始充电 (%)" Minimum="20" Maximum="99" Value="40" SpinButtonPlacementMode="Compact" Width="170"/>
+                  <NumberBox x:Name="ChargeStopBox" Header="停止充电 (%)" Minimum="21" Maximum="100" Value="70" SpinButtonPlacementMode="Compact" Width="170"/>
+                  <Button Content="应用自定义阈值" Click="ChargeCustom_Click" VerticalAlignment="Bottom"/>
+                </StackPanel>
+                <TextBlock x:Name="ChargeCustomHint" Text="自定义范围：开始值最低 20%，停止值最高 100%，且开始值必须小于停止值。" Style="{StaticResource CaptionLabel}"/>
               </StackPanel></Border>
               <Border x:Name="GpuCard" Style="{StaticResource CardStyle}"><StackPanel Spacing="10">
                 <TextBlock x:Uid="Text058" Text="显卡电源与输出" Style="{StaticResource SectionLabel}"/>
@@ -139,16 +149,6 @@
                 
               </StackPanel></Border>
               <Border x:Name="ColorStatusCard" Style="{StaticResource CardStyle}"><Grid><StackPanel Spacing="7"><TextBlock x:Uid="Text091" Text="当前色彩配置" Style="{StaticResource SectionLabel}"/><TextBlock x:Name="IccProfileText" Text="—" Style="{StaticResource CaptionLabel}"/><TextBlock x:Uid="Text092" x:Name="ColorVerificationText" Text="硬件 LUT 与 ICC 状态将分别读取。" Style="{StaticResource CaptionLabel}"/></StackPanel><StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center"><Button x:Uid="Text093" Content="刷新状态" Click="RefreshColor_Click"/><Button x:Uid="Text094" Content="恢复首次备份" Click="RestoreColor_Click"/></StackPanel></Grid></Border>
-              <Border Style="{StaticResource CardStyle}">
-                <StackPanel Spacing="12">
-                  <Grid ColumnSpacing="16"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <StackPanel Spacing="6"><TextBlock x:Uid="Text095" Text="内屏刷新率" Style="{StaticResource SectionLabel}"/><TextBlock x:Uid="Text096" x:Name="RefreshRateValue" Text="读取中…" FontSize="28" FontWeight="SemiBold"/></StackPanel>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"><ComboBox x:Uid="Text097" x:Name="RefreshRatePicker" Width="160" SelectionChanged="RefreshRate_SelectionChanged" AutomationProperties.Name="选择内屏刷新率"/><Button x:Uid="Text098" Content="读取状态" Click="ReadRefreshRate_Click"/></StackPanel>
-                  </Grid>
-                  <TextBlock x:Name="RefreshRateDetails" Style="{StaticResource CaptionLabel}"/>
-                  <TextBlock x:Uid="Text099" Text="选择目标刷新率后立即应用，保持当前分辨率。快捷键可在设置页修改。" Style="{StaticResource CaptionLabel}"/>
-                </StackPanel>
-              </Border>
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="12"><StackPanel Orientation="Horizontal" Spacing="8"><Button x:Uid="Text100" Content="夜间模式" Tag="ms-settings:nightlight" Click="OpenDisplaySettings_Click"/><Button x:Uid="Text101" Content="亮度与显示" Tag="ms-settings:display" Click="OpenDisplaySettings_Click"/><Button x:Uid="Text102" Content="高级显示设置" Tag="ms-settings:display-advanced" Click="OpenDisplaySettings_Click"/></StackPanel></StackPanel></Border>
             </StackPanel>
             <StackPanel x:Name="AudioPage" Visibility="Collapsed" Spacing="20">
@@ -212,7 +212,7 @@
               <Border x:Name="FnCard" Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="14">
                   <TextBlock x:Uid="Text168" Text="Fn 与 F1–F12" Style="{StaticResource SectionLabel}"/>
-                  <TextBlock x:Uid="Text169" Text="Fn+P：固件切换智能／高能，显示实际模式。Fn+R：切换内屏刷新率并显示悬浮提示。" Style="{StaticResource CaptionLabel}"/>
+                  <TextBlock x:Uid="Text169" Text="Fn+P：固件切换智能／高能，显示实际模式。Fn 行默认行为会保存到本机，并在下次登录后恢复。" Style="{StaticResource CaptionLabel}"/>
                   <ComboBox x:Uid="Text170" x:Name="FnRowModePicker" Header="F1–F12 默认行为" SelectionChanged="FnRowMode_Changed" HorizontalAlignment="Stretch"><ComboBoxItem x:Uid="Text171" Content="键帽图标功能优先"/><ComboBoxItem x:Uid="Text172" Content="标准 F1–F12 优先"/></ComboBox>
                   <TextBlock x:Uid="Text173" x:Name="KeyboardFnStateText" Text="正在读取固件键盘状态…" Style="{StaticResource CaptionLabel}"/>
                   <TextBlock x:Uid="Text174" Text="点按 Fn 可临时切换。登录后恢复在此保存的默认行为。亮度和音量由固件与 Windows 处理。F11 的软件入口打开 Honor Control。" Style="{StaticResource CaptionLabel}"/>
@@ -225,12 +225,8 @@
                   <Grid><TextBlock x:Uid="Text176" Text="备用全局组合键" Style="{StaticResource SectionLabel}"/><ToggleSwitch x:Uid="Text177" x:Name="HotkeysEnabledSwitch" HorizontalAlignment="Right" OnContent="开启" OffContent="关闭" Toggled="HotkeyDraft_Changed"/></Grid>
                   <TextBlock x:Uid="Text178" Text="点击快捷键框后按组合键，保存后生效。应用缩到托盘时仍可使用；按住不连续触发。" Style="{StaticResource CaptionLabel}"/>
                   <Grid ColumnSpacing="18"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="260"/></Grid.ColumnDefinitions>
-                    <StackPanel Spacing="4" VerticalAlignment="Center"><TextBlock x:Uid="Text179" Text="循环性能模式" FontSize="16"/><TextBlock x:Uid="Text180" Text="智能 → 高能 → HUNTER，跳过供电不允许的模式。" Style="{StaticResource CaptionLabel}"/></StackPanel>
+                    <StackPanel Spacing="4" VerticalAlignment="Center"><TextBlock x:Uid="Text179" Text="循环性能模式" FontSize="16"/><TextBlock x:Uid="Text180" Text="智能 → 高能，跳过供电不允许的模式。" Style="{StaticResource CaptionLabel}"/></StackPanel>
                     <TextBox x:Uid="Text181" x:Name="PerformanceHotkeyBox" Grid.Column="1" Tag="performance" IsReadOnly="True" Text="Ctrl + Alt + P" GotFocus="CaptureHotkey_GotFocus" LostFocus="CaptureHotkey_LostFocus" PreviewKeyDown="CaptureHotkey_KeyDown" AutomationProperties.Name="性能模式快捷键" VerticalAlignment="Center"/>
-                  </Grid>
-                  <Grid ColumnSpacing="18"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="260"/></Grid.ColumnDefinitions>
-                    <StackPanel Spacing="4" VerticalAlignment="Center"><TextBlock x:Uid="Text182" Text="循环内屏刷新率" FontSize="16"/><TextBlock x:Uid="Text183" Text="按内屏支持列表循环切换，保持当前分辨率。" Style="{StaticResource CaptionLabel}"/></StackPanel>
-                    <TextBox x:Uid="Text184" x:Name="RefreshHotkeyBox" Grid.Column="1" Tag="refresh" IsReadOnly="True" Text="Ctrl + Alt + R" GotFocus="CaptureHotkey_GotFocus" LostFocus="CaptureHotkey_LostFocus" PreviewKeyDown="CaptureHotkey_KeyDown" AutomationProperties.Name="刷新率快捷键" VerticalAlignment="Center"/>
                   </Grid>
                   <StackPanel Orientation="Horizontal" Spacing="8"><Button x:Uid="Text185" x:Name="SaveHotkeysButton" Content="保存快捷键" Click="SaveHotkeys_Click"/><Button x:Uid="Text186" Content="恢复默认快捷键" Click="ResetHotkeys_Click"/></StackPanel>
                   <TextBlock x:Name="HotkeyStatusText" Style="{StaticResource CaptionLabel}"/>
@@ -247,7 +243,7 @@
                 <TextBlock x:Uid="Text198" Text="独立设备控制工具 · WinUI 3 · Windows x64" Style="{StaticResource CaptionLabel}"/>
                 <TextBlock x:Uid="Text199" Text="性能、显示、音频与键盘控制。无需运行荣耀电脑管家。" TextWrapping="Wrap"/>
                 <StackPanel Orientation="Horizontal" Spacing="10"><Button x:Uid="Text200" Content="GitHub 源码" Click="Repository_Click"/><Button x:Uid="Text201" Content="许可协议" Click="License_Click"/></StackPanel>
-                <TextBlock x:Uid="Text202" Text="作者 wzk112 · 非商业个人研究许可 · 非荣耀官方产品" Style="{StaticResource CaptionLabel}"/>
+                <TextBlock x:Uid="Text202" Text="原作者 wzk112 · 当前维护 dingc · 非商业个人研究许可 · 非荣耀官方产品" Style="{StaticResource CaptionLabel}"/>
               </StackPanel></Border>
               <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="12">
                 <TextBlock x:Uid="Text203" Text="教程与更新" Style="{StaticResource SectionLabel}"/>

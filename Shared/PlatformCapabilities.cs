@@ -44,7 +44,7 @@ internal sealed class PlatformCapabilities
             capabilities.DiscreteGpu = false;
             capabilities.Dtt = false;
             capabilities.SecondFan = false;
-            capabilities.FnWrite = false;
+            capabilities.FnWrite = true;
             capabilities.MicLight = false;
             capabilities.ColorLut = false;
             capabilities.Audio = false;
