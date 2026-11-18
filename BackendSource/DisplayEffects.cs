@@ -1,8 +1,8 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 
+// Eye-comfort / reading presets rendered through the Windows gamma ramp.
 internal sealed class DisplayEffects
 {
     public readonly string Style;
@@ -48,28 +48,21 @@ internal sealed class DisplayEffects
         else File.Move(temp, path);
     }
 
-    public double[] Apply(double[] calibration, int samples, int localHour)
+    // Per-channel gains for a Windows gamma ramp. The reading matrices are applied
+    // by their row sums because a gamma ramp cannot express a full 3x3 mix.
+    public double[] GammaFactors(int localHour)
     {
-        if (!Active) return calibration;
         double[] matrix = Style == "reading" ? ReadingMatrices[localHour / 6] : null;
         double warmth = Temperature / 100.0;
         double redGain = warmth < 0 ? 1 + warmth * .13 : 1;
         double greenGain = warmth < 0 ? 1 + warmth * .04 : 1 - warmth * .05;
         double blueGain = (Style == "eye" ? .91 : 1) * (warmth > 0 ? 1 - warmth * .20 : 1);
-        int stride = samples - 1;
-        var output = new double[samples * samples * samples * 3];
-        for (int offset = 0; offset < output.Length; offset += 3)
+        if (matrix == null) return new[] { redGain, greenGain, blueGain };
+        return new[]
         {
-            int sample = offset / 3;
-            double r = calibration == null ? sample / (samples * samples) / (double)stride : calibration[offset];
-            double g = calibration == null ? sample / samples % samples / (double)stride : calibration[offset + 1];
-            double b = calibration == null ? sample % samples / (double)stride : calibration[offset + 2];
-            output[offset] = Clamp(redGain * (matrix == null ? r : matrix[0] * r + matrix[1] * g + matrix[2] * b));
-            output[offset + 1] = Clamp(greenGain * (matrix == null ? g : matrix[3] * r + matrix[4] * g + matrix[5] * b));
-            output[offset + 2] = Clamp(blueGain * (matrix == null ? b : matrix[6] * r + matrix[7] * g + matrix[8] * b));
-        }
-        return output;
+            redGain * (matrix[0] + matrix[1] + matrix[2]),
+            greenGain * (matrix[3] + matrix[4] + matrix[5]),
+            blueGain * (matrix[6] + matrix[7] + matrix[8])
+        };
     }
-
-    private static double Clamp(double value) { return Math.Min(1, Math.Max(0, value)); }
 }

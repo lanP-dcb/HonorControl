@@ -1,5 +1,63 @@
 # Changelog / 更新记录
 
+## 1.0.0
+
+首个正式版 / First stable release.
+
+- 支持荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56）：充电保护、平衡/高能性能模式、Fn F1–F12、Windows 伽马显示与亮度节律。
+- 安装包改为框架依赖发布，需 .NET 8 Desktop Runtime（x64）；安装器缺失时会提示并打开官方下载页。
+- 修复重新安装后首次打开时管理员 Broker 未启动导致的硬件控制超时。
+- 移除未使用的网络加速、音频、GPU、DTT、风扇预设等模块，安装目录约 95 MB。
+- Adds support for the HONOR X14 Ryzen Edition 2024 R5-7640HS (FRI-H56): charge protection, Balanced/Performance modes, Fn F1–F12, Windows gamma display and brightness rhythm.
+- Framework-dependent packaging with a .NET 8 Desktop Runtime (x64) check and download prompt.
+- Fixes the privileged broker timeout when enabling hardware control after a reinstall.
+- Removes unused network, audio, GPU, DTT and fan-preset modules; installed payload is about 95 MB.
+
+## 0.15.4
+
+- 修复卸载后重新安装并手动启动时，管理员控制会话未启动导致“启用硬件控制”超时的问题；现在会自动启动常驻控制进程并重试连接。
+- Fixes the reinstall-and-launch timeout when enabling hardware control because the resident privileged broker was not running; the app now starts it automatically and retries the connection.
+
+## 0.15.3
+
+- 改为框架依赖发布，安装包不再携带 .NET 8 运行时；安装目录由约 236 MB 降至约 95 MB。
+- 安装器启动时检查 .NET 8 Desktop Runtime（x64）；缺失时提示并打开微软官方下载页，不再继续安装。
+- Switches to a framework-dependent build and stops bundling the .NET 8 runtime; the installed payload drops from about 236 MB to about 95 MB.
+- Setup now checks for the .NET 8 Desktop Runtime (x64); if it is missing, setup prompts and opens Microsoft's official download page instead of continuing.
+
+## 0.15.2
+
+- 修复开机自启时窗口短暂闪现后进入后台的问题。
+- 修复充电保护“自定义”模式在输入完成前被固件定时刷新跳回预设的问题。
+- 性能模式“智能”更名为“平衡”，当前性能模式标题补充 OS Turbo 说明。
+- 关于与支持范围明确标注荣耀 X14 锐龙版 2024 R5-7640HS（FRI-H56）、机型代号 FRI-HXX 与支持 BIOS 1.15。
+- Prevents the startup window from briefly flashing before it goes to the background.
+- Keeps the custom charge preset while it is being edited instead of snapping back to the firmware preset.
+- Renames the Smart performance mode to Balanced and adds the OS Turbo label to the current-mode card.
+- States the supported model explicitly as HONOR X14 Ryzen Edition 2024 R5-7640HS (FRI-H56), model code FRI-HXX, supported BIOS 1.15.
+
+## 0.15.1
+
+- 显示页恢复“亮度节律（系统伽马）”，并移除“夜间模式 / 亮度与显示 / 高级显示设置”三个系统设置跳转按钮。
+- 顶部提示信息 5 秒后自动关闭；设备未通过适配检查的红色横幅仍保持常驻。
+- 性能与散热页移除风扇卡片，不再读取风扇传感器或显示转速。
+- 安装完成后默认不自动运行；结束页可勾选“运行 Honor Control”，点击“确定”后按勾选状态启动。
+- Restores brightness rhythm (system gamma) on the display page and removes the Night light / Brightness and display / Advanced display settings shortcuts.
+- Auto-dismisses top notices after five seconds; the non-closable unsupported-device banner remains permanent.
+- Removes the fan card from the Performance and cooling page; fan sensors are no longer read or displayed.
+- Setup no longer launches the app automatically; the finish page offers a "Run Honor Control" checkbox and starts it only if ticked when OK is clicked.
+
+## 0.15.0
+
+- 适配荣耀笔记本 X14 锐龙版 2024（FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M）：充电保护、智能/高能性能模式与系统伽马显示；网络、音频、显卡、DTT、风扇预设按能力隐藏。
+- 充电保护新增自定义阈值、总开关（开启默认家用，关闭恢复充满停止）与固件回读；Fn/F1–F12 优先级设置启用；HUNTER 仅展示不可选；移除内屏刷新率设置；非适配机型首次运行提示、顶部红色横幅与仅展示状态。
+- 精简应用与安装包：移除音频、网络、显卡、DTT、自动性能、进程调度、硬件色彩/ICC/LUT、刷新率、风扇预设写入模块；安装包不再携带色彩校准组件、场景表、App SDK AI/ML/Widgets 运行库与多余语言目录，体积由约 288 MB 降至约 236 MB。
+- 覆盖安装时会删除旧版本残留文件，避免升级后仍保留已移除的组件。
+- Adapts the HONOR MagicBook X14 2024 (FRI-H56 / FRI-HXX / M1030 / BIOS 1.15 / Ryzen 5 7640HS / Radeon 760M): charging protection, Smart/Performance modes and system gamma display; network, audio, GPU, DTT and fan presets are capability-hidden.
+- Adds custom charge thresholds, a master switch (Home when on, charge-to-full when off) and firmware readback; enables Fn / F1–F12 priority; shows HUNTER as display-only; removes the refresh-rate setting; and adds first-run unsupported-device notice, a non-closable red banner and display-only controls.
+- Simplifies the app and installer: removes audio, network, GPU, DTT, automatic performance, process scheduling, hardware colour/ICC/LUT, refresh-rate and fan-preset-write modules; the installer no longer ships colour calibration components, scene tables, App SDK AI/ML/Widgets runtimes or extra locale folders, reducing the payload from about 288 MB to about 236 MB.
+- Upgrades now remove files left by older versions so deleted components do not remain in the installation directory.
+
 ## 0.14.5
 
 - 安装器自动检查 DRA-XX / TMA2024 的本机原厂 ICC 与 sRGB、P3 校准 XML，导入结果显示在安装完成页。

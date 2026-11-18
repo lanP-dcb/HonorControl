@@ -37,7 +37,7 @@
     <value>启用硬件控制</value>
   </data>
   <data name="Text009.Text" xml:space="preserve">
-    <value>当前性能模式</value>
+    <value>当前性能模式 · OS Turbo</value>
   </data>
   <data name="Text010.Text" xml:space="preserve">
     <value>等待连接</value>
@@ -61,7 +61,7 @@
     <value>性能模式</value>
   </data>
   <data name="Text017.Text" xml:space="preserve">
-    <value>智能</value>
+    <value>平衡</value>
   </data>
   <data name="Text018.Text" xml:space="preserve">
     <value>✓ 已选择</value>
@@ -82,7 +82,7 @@
     <value>✓ 已选择</value>
   </data>
   <data name="Text024.Text" xml:space="preserve">
-    <value>固件模式 3，需圆口电源或 135 W 以上 PD。</value>
+    <value>仅作展示，本机不可选。</value>
   </data>
   <data name="Text025.Text" xml:space="preserve">
     <value>风扇转速与预设</value>
@@ -277,7 +277,7 @@
     <value>护眼与色温</value>
   </data>
   <data name="Text078.Text" xml:space="preserve">
-    <value>在当前色域 LUT 上叠加显示效果，保持 ICC 关联。电子书按本地时间使用四套色彩矩阵。</value>
+    <value>在 Windows 系统伽马表上叠加护眼或电子书效果；电子书按本地时间使用四套色彩矩阵。</value>
   </data>
   <data name="Text079.Header" xml:space="preserve">
     <value>显示效果</value>
@@ -298,10 +298,10 @@
     <value>应用显示效果</value>
   </data>
   <data name="Text085.Text" xml:space="preserve">
-    <value>类自然光亮度</value>
+    <value>亮度节律（系统伽马）</value>
   </data>
   <data name="Text086.Text" xml:space="preserve">
-    <value>内屏亮度在 53% 至 93% 范围内时，每 60 秒渐变一次，最多增加 5 个百分点。电池低于 60% 或启用节电时暂停。</value>
+    <value>在系统伽马表上叠加约 60 秒一次的缓慢亮度起伏，幅度约 4%，与护眼、电子书和色温叠加。关闭后立即恢复当前效果。</value>
   </data>
   <data name="Text087.OnContent" xml:space="preserve">
     <value>开启</value>
@@ -559,7 +559,7 @@
     <value>Fn 与 F1–F12</value>
   </data>
   <data name="Text169.Text" xml:space="preserve">
-    <value>Fn+P：固件切换智能／高能，显示实际模式。Fn+R：切换内屏刷新率并显示悬浮提示。</value>
+    <value>Fn+P：固件切换平衡／高能，显示实际模式。</value>
   </data>
   <data name="Text170.Header" xml:space="preserve">
     <value>F1–F12 默认行为</value>
@@ -640,7 +640,7 @@
     <value>设备与支持范围</value>
   </data>
   <data name="Text195.Text" xml:space="preserve">
-    <value>固件写入限定当前机型与 BIOS。色彩调整适用于当前内屏的 SDR 输出。</value>
+    <value>固件写入限定当前机型与 BIOS。显示效果使用 Windows 系统伽马表，适用于当前内屏的 SDR 输出。</value>
   </data>
   <data name="Text196.Text" xml:space="preserve">
     <value>最近操作</value>
@@ -661,7 +661,7 @@
     <value>许可协议</value>
   </data>
   <data name="Text202.Text" xml:space="preserve">
-    <value>作者 wzk112 · 非商业个人研究许可 · 非荣耀官方产品</value>
+    <value>原作者 wzk112 · 当前维护 dingc · 非商业个人研究许可 · 非荣耀官方产品</value>
   </data>
   <data name="Text203.Text" xml:space="preserve">
     <value>教程与更新</value>

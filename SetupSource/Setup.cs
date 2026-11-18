@@ -9,18 +9,18 @@ using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 [assembly: AssemblyTitle("Honor Control Setup")]
 [assembly: AssemblyProduct("Honor Control")]
-[assembly: AssemblyVersion("0.14.5.0")]
-[assembly: AssemblyFileVersion("0.14.5.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: AssemblyCopyright("Copyright 2026 wzk112")]
 
 internal static class SetupProgram
 {
-    internal const string Version = "0.14.5";
+    internal const string Version = "1.0.0";
 #if UNINSTALL
     internal static readonly bool Uninstall = true;
 #else
@@ -42,7 +42,69 @@ internal static class SetupProgram
         }
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
+        if (!Uninstall && !DesktopRuntime.IsNet8DesktopRuntimeInstalled())
+        {
+            bool silentInstall = Array.Exists(Environment.GetCommandLineArgs(), value => value.Equals("/SILENT", StringComparison.OrdinalIgnoreCase));
+            string message = Thread.CurrentThread.CurrentUICulture.Name.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
+                ? "未检测到 .NET 8 Desktop Runtime（x64）。\r\n\r\nHonor Control 使用框架依赖发布，需要先安装 .NET 8 Desktop Runtime，安装后再运行本安装程序。\r\n\r\n是否打开 Microsoft 官方下载页面？"
+                : "Microsoft .NET 8 Desktop Runtime (x64) was not found.\r\n\r\nHonor Control is framework-dependent and requires the .NET 8 Desktop Runtime. Install it, then run this setup again.\r\n\r\nOpen the official Microsoft download page?";
+            if (silentInstall)
+            {
+                string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "HonorControl", "Setup");
+                Directory.CreateDirectory(folder);
+                File.WriteAllText(Path.Combine(folder, "setup-error.log"), message);
+            }
+            else if (MessageBox.Show(message, "Honor Control", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            {
+                Process.Start(new ProcessStartInfo(DesktopRuntime.DownloadUrl) { UseShellExecute = true });
+            }
+            Environment.ExitCode = 2;
+            return;
+        }
         Application.Run(new SetupForm());
+    }
+}
+
+internal static class DesktopRuntime
+{
+    internal const string DownloadUrl = "https://dotnet.microsoft.com/download/dotnet/8.0";
+
+    internal static bool IsNet8DesktopRuntimeInstalled()
+    {
+        foreach (string root in RootDirectories())
+        {
+            string shared = Path.Combine(root, "shared", "Microsoft.WindowsDesktop.App");
+            if (!Directory.Exists(shared)) continue;
+            foreach (string directory in Directory.GetDirectories(shared, "8.*"))
+            {
+                string name = Path.GetFileName(directory);
+                int dash = name.IndexOf('-');
+                if (dash >= 0) name = name.Substring(0, dash);
+                Version version;
+                if (Version.TryParse(name, out version) && version.Major == 8) return true;
+            }
+        }
+        try
+        {
+            using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64)
+                .OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App"))
+            {
+                if (key != null)
+                    foreach (string value in key.GetValueNames())
+                        if (value.StartsWith("8.", StringComparison.Ordinal)) return true;
+            }
+        }
+        catch { }
+        return false;
+    }
+
+    private static IEnumerable<string> RootDirectories()
+    {
+        string machine = Environment.GetEnvironmentVariable("ProgramW6432");
+        if (string.IsNullOrEmpty(machine)) machine = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        if (!string.IsNullOrEmpty(machine)) yield return Path.Combine(machine, "dotnet");
+        string configured = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+        if (!string.IsNullOrEmpty(configured)) yield return configured;
     }
 }
 
@@ -50,7 +112,7 @@ internal sealed class SetupForm : Form
 {
     private bool english = !Thread.CurrentThread.CurrentUICulture.Name.StartsWith("zh", StringComparison.OrdinalIgnoreCase);
     private bool working, complete;
-    private string calibrationResult;
+
     private readonly bool silent = Array.Exists(Environment.GetCommandLineArgs(), value => value.Equals("/SILENT", StringComparison.OrdinalIgnoreCase));
     private readonly Label title = new Label(), subtitle = new Label(), path = new Label(), status = new Label();
     private readonly FlowLayoutPanel language = new FlowLayoutPanel();
@@ -102,7 +164,7 @@ internal sealed class SetupForm : Form
         progress.Maximum = 100;
         open.AutoSize = true;
         open.Margin = new Padding(0, 0, 0, 8);
-        open.Checked = true; open.Visible = false;
+        open.Checked = false; open.Visible = false;
         foreach (var button in new[] { install, cancel, license })
         {
             button.AutoSize = true;
@@ -173,22 +235,15 @@ internal sealed class SetupForm : Form
         subtitle.Text = (SetupProgram.Uninstall ? TextFor("卸载", "Uninstall") : TextFor("安装 / 升级", "Install / upgrade")) + " · " + SetupProgram.Version + " · Windows x64";
         path.Text = SetupProgram.InstallPath;
         notes.Text = SetupProgram.Uninstall
-            ? TextFor("将停止登录任务，退出托盘并恢复自动控制所修改的设置，然后移除应用。\r\n\r\n个人偏好、日志、色彩备份与校准数据保留在 LocalAppData\\HonorControl。不会卸载硬件驱动。", "Stops sign-in tasks, exits the tray, restores automatic-control changes and removes the application.\r\n\r\nPreferences, logs, color backups and calibration stay in LocalAppData\\HonorControl. Hardware drivers are retained.")
-            : TextFor("安装到 Program Files，创建开始菜单入口并注册登录启动。升级保留个人设置和本机校准文件。\r\n\r\n已验证 DRA-XX / BIOS 1.13 / 125H + RTX 4060。安装器会检查受支持内屏的本机原厂 ICC 和 LUT，核对后自动导入。\r\n\r\n首次打开有具体使用教程和官方组件迁移清单。保留 Intel、NVIDIA、Realtek、Fortemedia、Histen 等硬件驱动。\r\n\r\n仅供非商业个人使用与研究。禁止商用。", "Installs in Program Files with a Start menu entry and sign-in startup. Upgrades preserve preferences and local calibration.\r\n\r\nVerified on DRA-XX / BIOS 1.13 / 125H + RTX 4060. Setup checks for the local factory ICC and LUT data and imports it for the supported internal panel.\r\n\r\nThe first-launch tutorial includes usage steps and an OEM migration checklist. Keep Intel, NVIDIA, Realtek, Fortemedia and Histen hardware drivers.\r\n\r\nNoncommercial personal use and research only. Commercial use prohibited.");
+            ? TextFor("将停止登录任务，退出托盘并恢复自动控制所修改的设置，然后移除应用。\r\n\r\n个人偏好、日志与显示伽马备份保留在 LocalAppData\\HonorControl。不会卸载硬件驱动。", "Stops sign-in tasks, exits the tray, restores automatic-control changes and removes the application.\r\n\r\nPreferences, logs and display gamma backups stay in LocalAppData\\HonorControl. Hardware drivers are retained.")
+            : TextFor("安装到 Program Files，创建开始菜单入口并注册登录启动。升级保留个人设置和显示伽马备份。\r\n\r\n需要 .NET 8 Desktop Runtime（x64）。如果未安装，安装器会提示并打开微软官方下载页面。\r\n\r\n已验证 FRI-HXX / M1030 / BIOS 1.15 / 7640HS + Radeon 760M。充电保护与平衡/高能模式需在退出荣耀电脑管家性能后台后写入；显示使用 Windows 伽马表，不导入 ICC/LUT。\r\n\r\n首次打开有具体使用教程和官方组件迁移清单。不要删除 ACPI、AMD 显卡、音频和 HID 驱动。\r\n\r\n仅供非商业个人使用与研究。禁止商用。", "Installs in Program Files with a Start menu entry and sign-in startup. Upgrades preserve preferences and display gamma backups.\r\n\r\nRequires the .NET 8 Desktop Runtime (x64). If it is missing, setup prompts and opens Microsoft's official download page.\r\n\r\nVerified on FRI-HXX / M1030 / BIOS 1.15 / 7640HS + Radeon 760M. Charge protection and Balanced/Performance modes require HONOR PC Manager performance services to be stopped first. Display uses the Windows gamma ramp; no ICC/LUT is imported.\r\n\r\nThe first-launch tutorial includes usage steps and an OEM migration checklist. Keep ACPI, AMD graphics, audio and HID drivers.\r\n\r\nNoncommercial personal use and research only. Commercial use prohibited.");
         if (complete && !SetupProgram.Uninstall)
         {
-            if (calibrationResult == "Factory")
-                notes.Text = TextFor("已自动导入本机原厂 ICC 和 LUT。打开应用后，可在「显示与色彩」选择色彩模式。", "Local factory ICC and LUT data was imported. Open Display and color to choose a color mode.");
-            else if (calibrationResult == "Existing")
-                notes.Text = TextFor("已保留本机现有的 ICC 和 LUT。打开应用后，可在「显示与色彩」选择色彩模式。", "Your existing ICC and LUT data is available. Open Display and color to choose a color mode.");
-            else if (calibrationResult == "ProfileInstallFailed")
-                notes.Text = TextFor("应用已安装。Windows 未能注册 ICC 配置。请在「设置与记录」中使用「安装 / 检查 ICC」。", "The app is installed. Windows could not register the ICC profiles. Use Install / check ICC in Settings and logs.");
-            else
-                notes.Text = TextFor("应用已安装。未找到可自动导入的完整本机原厂色彩校准。要切换色彩，请按安装指南导入与内屏匹配的 ICC 和 LUT。", "The app is installed. Setup could not import a complete set of local factory calibration. To switch color modes, follow the installation guide to import ICC and LUT data for your panel.");
+            notes.Text = TextFor("应用已安装。打开 Honor Control，在「性能与散热」检查充电保护与性能模式。", "The app is installed. Open Honor Control and check charge protection and performance modes under Performance and cooling.");
         }
         if (!working) status.Text = complete ? TextFor("已完成。", "Completed.") : TextFor("准备就绪", "Ready");
-        install.Text = complete ? TextFor("完成", "Finish") : SetupProgram.Uninstall ? TextFor("卸载", "Uninstall") : TextFor("安装", "Install");
-        cancel.Text = TextFor("关闭", "Close"); license.Text = TextFor("许可协议", "License"); open.Text = TextFor("打开 Honor Control", "Open Honor Control");
+        install.Text = complete ? TextFor("确定", "OK") : SetupProgram.Uninstall ? TextFor("卸载", "Uninstall") : TextFor("安装", "Install");
+        cancel.Text = TextFor("关闭", "Close"); license.Text = TextFor("许可协议", "License"); open.Text = TextFor("运行 Honor Control", "Run Honor Control");
     }
 
     private void ShowLicense()
@@ -207,7 +262,7 @@ internal sealed class SetupForm : Form
         working = true; install.Enabled = false; cancel.Enabled = false; language.Enabled = false;
         try
         {
-            calibrationResult = await Task.Run((Func<string>)Perform);
+            await Task.Run((Action)Perform);
             complete = true; working = false; progress.Value = 100; open.Visible = !SetupProgram.Uninstall;
             UpdateText();
         }
@@ -226,7 +281,7 @@ internal sealed class SetupForm : Form
         BeginInvoke((Action)delegate { progress.Value = value; status.Text = TextFor(zh, en); });
     }
 
-    private string Perform()
+    private void Perform()
     {
         string logDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "HonorControl", "Setup");
         Directory.CreateDirectory(logDirectory);
@@ -234,7 +289,7 @@ internal sealed class SetupForm : Form
         {
             Report(20, "正在停止并恢复设备控制…", "Stopping and restoring device control…");
             RunScript(Path.Combine(SetupProgram.InstallPath, "Uninstall.ps1"), "", logDirectory);
-            Report(100, "卸载完成", "Uninstalled"); return null;
+            Report(100, "卸载完成", "Uninstalled"); return;
         }
         string staging = Path.Combine(Path.GetTempPath(), "HonorControl-Setup-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(staging);
@@ -266,15 +321,8 @@ internal sealed class SetupForm : Form
             Report(75, "正在安装并注册登录启动…", "Installing and registering sign-in startup…");
             string languagePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "HonorControl", "language.txt");
             if (!File.Exists(languagePath)) File.WriteAllText(languagePath, english ? "en-US" : "zh-CN");
-            string installResult = RunScript(Path.Combine(staging, "Install.ps1"), "", logDirectory);
-            try
-            {
-                var result = new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(installResult);
-                object calibration;
-                return result != null && result.TryGetValue("Calibration", out calibration) ? calibration as string : null;
-            }
-            catch (ArgumentException) { return null; }
-            catch (InvalidOperationException) { return null; }
+            RunScript(Path.Combine(staging, "Install.ps1"), "", logDirectory);
+            return;
         }
         finally
         {
@@ -302,6 +350,15 @@ internal sealed class SetupForm : Form
 
     private static void OpenApplication()
     {
-        try { using (var signal = EventWaitHandle.OpenExisting("Local\\HonorControl.Show." + WindowsIdentity.GetCurrent().User.Value)) signal.Set(); } catch { }
+        try { using (var signal = EventWaitHandle.OpenExisting("Local\\HonorControl.Show." + WindowsIdentity.GetCurrent().User.Value)) { signal.Set(); return; } } catch { }
+        try
+        {
+            Process.Start(new ProcessStartInfo(Path.Combine(SetupProgram.InstallPath, "HonorControl.exe"))
+            {
+                UseShellExecute = true,
+                WorkingDirectory = SetupProgram.InstallPath
+            });
+        }
+        catch { }
     }
 }

@@ -37,7 +37,7 @@
     <value>Enable hardware control</value>
   </data>
   <data name="Text009.Text" xml:space="preserve">
-    <value>Current performance mode</value>
+    <value>Current performance mode · OS Turbo</value>
   </data>
   <data name="Text010.Text" xml:space="preserve">
     <value>Waiting for connection</value>
@@ -61,7 +61,7 @@
     <value>Performance mode</value>
   </data>
   <data name="Text017.Text" xml:space="preserve">
-    <value>Smart</value>
+    <value>Balanced</value>
   </data>
   <data name="Text018.Text" xml:space="preserve">
     <value>✓ Selected</value>
@@ -82,7 +82,7 @@
     <value>✓ Selected</value>
   </data>
   <data name="Text024.Text" xml:space="preserve">
-    <value>Firmware mode 3. Requires barrel-jack power or at least 135 W USB-C PD.</value>
+    <value>Display only; not selectable on this model.</value>
   </data>
   <data name="Text025.Text" xml:space="preserve">
     <value>Fan speed and presets</value>
@@ -277,7 +277,7 @@
     <value>Eye comfort and color temperature</value>
   </data>
   <data name="Text078.Text" xml:space="preserve">
-    <value>Apply effects over the current gamut LUT while preserving ICC association. Reading mode uses four matrices based on local time.</value>
+    <value>Apply eye-care or reading effects on the Windows system gamma ramp; reading mode uses four matrices based on local time.</value>
   </data>
   <data name="Text079.Header" xml:space="preserve">
     <value>Display effects</value>
@@ -298,10 +298,10 @@
     <value>Apply display effects</value>
   </data>
   <data name="Text085.Text" xml:space="preserve">
-    <value>Cyclic brightness</value>
+    <value>Brightness rhythm (system gamma)</value>
   </data>
   <data name="Text086.Text" xml:space="preserve">
-    <value>At 53–93% internal display brightness, a 60-second cycle adds up to 5 percentage points. Pauses below 60% battery or in battery saver.</value>
+    <value>Adds a slow one-minute brightness wave to the Windows gamma ramp, about 4% deep, layered with eye comfort, reading and color temperature. Turning it off restores the current effect immediately.</value>
   </data>
   <data name="Text087.OnContent" xml:space="preserve">
     <value>On</value>
@@ -559,7 +559,7 @@
     <value>Fn and F1–F12</value>
   </data>
   <data name="Text169.Text" xml:space="preserve">
-    <value>Fn+P changes the firmware Smart / Performance mode. Fn+R changes the internal refresh rate. Both show an on-screen notification.</value>
+    <value>Fn+P changes the firmware Balanced / Performance mode and shows the actual mode.</value>
   </data>
   <data name="Text170.Header" xml:space="preserve">
     <value>Default F1–F12 behavior</value>
@@ -640,7 +640,7 @@
     <value>Device and compatibility</value>
   </data>
   <data name="Text195.Text" xml:space="preserve">
-    <value>Firmware writes are limited to the verified model and BIOS. Color adjustment supports SDR on the verified internal panel.</value>
+    <value>Firmware writes are limited to the verified model and BIOS. Display effects use the Windows system gamma ramp for SDR output on the verified internal panel.</value>
   </data>
   <data name="Text196.Text" xml:space="preserve">
     <value>Recent activity</value>
@@ -661,7 +661,7 @@
     <value>License</value>
   </data>
   <data name="Text202.Text" xml:space="preserve">
-    <value>By wzk112 · Noncommercial personal research license · Independent of HONOR</value>
+    <value>Original author wzk112 · Maintained by dingc · Noncommercial personal research license · Independent of HONOR</value>
   </data>
   <data name="Text203.Text" xml:space="preserve">
     <value>Tutorial and updates</value>
